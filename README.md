@@ -1,5 +1,8 @@
 # PDF Book Translator
 
+[![ci](https://github.com/Direles/LitteraLit/actions/workflows/ci.yml/badge.svg)](https://github.com/Direles/LitteraLit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Traduce libri tecnici in PDF **conservando il layout**: redazione vettoriale del testo originale, riuso dei font embedded, sillabazione nella lingua di destinazione, adattamento tipografico con metriche reali e un report QA per pagina.
 
 > **Stato**: migrazione **completata** (M1–M11) e codice pubblicato. Il progetto vive in
