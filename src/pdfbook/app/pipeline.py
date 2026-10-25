@@ -1,14 +1,13 @@
 """Pipeline di documento (M11): PDF → pagine → traduzione → rendering → QA.
 
-Il job conosce solo il *flusso*: legge le pagine, delega traduzione, rendering e QA,
-salva e chiude. Nessun HTTP, nessun disegno.
+Il job conosce solo il flusso: legge, delega traduzione, rendering e QA, salva e chiude.
 """
 
 from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from pdfbook.config.settings import AppSettings
@@ -17,13 +16,15 @@ from pdfbook.layout.flow import split_translation
 from pdfbook.layout.hyphenation import Hyphenation
 from pdfbook.layout.tables import mark_tables
 from pdfbook.qa.checks_glossary import check_glossary
-from pdfbook.qa.report import gate, write_report
+from pdfbook.qa.report import write_report
 from pdfbook.rendering.vector_renderer import VectorRenderer
 from pdfbook.translation.pipeline import TranslationOutcome, TranslationPipeline
 from pdfbook.translation.ratelimit import RateLimiter
 
 from .checkpoints import checkpoint, fingerprint, start_journal
 from .costs import account_costs
+from .errors import Cancelled
+from .job_result import JobResult
 from .journal import Journal, load_journal, remove_journal
 from .page_plan import PagePlan, block_units, build_plans
 from .page_render import render_and_check
@@ -58,24 +59,6 @@ class JobSpec:
     resume: bool = False
 
 
-@dataclass
-class JobResult:
-    """Esito del job: file prodotti, report e conteggi."""
-
-    output_pdf: Path
-    report_path: Path
-    report: QAReport
-    pages: int = 0
-    blocks: int = 0
-    resumed_pages: int = 0
-    summary: dict[str, int] = field(default_factory=dict)
-    glossary_suggestions: list[str] = field(default_factory=list)
-
-    def violations(self) -> list[str]:
-        """Violazioni del gate di pubblicazione (vuoto = accettabile)."""
-        return gate(self.report)
-
-
 class TranslationJob:
     """Esegue la traduzione di un documento su un ``Runtime``."""
 
@@ -86,8 +69,8 @@ class TranslationJob:
 
     # ---------- API ----------
 
-    def run(self, progress=None) -> JobResult:
-        """Traduce le pagine richieste, salva il PDF e il report QA."""
+    def run(self, progress=None, cancel=None) -> JobResult:
+        """Traduce le pagine richieste; ``cancel()`` ferma prima della pagina successiva."""
         first, last = self._range()
         self._offset = first
         pages = [mark_tables(self.runtime.source.page(i)) for i in range(first, last + 1)]
@@ -108,6 +91,8 @@ class TranslationJob:
         total = last - first + 1
         try:
             for done in range(1, total + 1):
+                if cancel is not None and cancel():
+                    raise Cancelled("annullato dall'utente")
                 previous = self._process_page(
                     plans, done, translator, page_translator, renderer, previous,
                     report, counters, journal, progress,
@@ -126,8 +111,8 @@ class TranslationJob:
             glossary_suggestions=page_translator.suggestions(),
         )
         log.info(
-            "job completato: %s pagine, %s blocchi, %s issue",
-            result.pages, result.blocks, len(report.issues),
+            "job completato: %s pagine, %s blocchi, %s issue", result.pages, result.blocks,
+            len(report.issues),
         )
         return result
 

@@ -14,6 +14,7 @@ from pdfbook.translation.providers.base import ProviderError
 
 __all__ = [
     "EXIT_CODES",
+    "Cancelled",
     "UsageError",
     "classify",
     "describe",
@@ -26,6 +27,7 @@ EXIT_CODES = {
     "input": 3,
     "provider": 4,
     "layout": 5,
+    "cancelled": 130,
 }
 
 
@@ -33,9 +35,15 @@ class UsageError(ValueError):
     """Configurazione o argomenti non validi (codice 2)."""
 
 
+class Cancelled(RuntimeError):
+    """L'utente ha annullato il lavoro (codice 130, come SIGINT)."""
+
+
 def classify(error: BaseException) -> str:
     """Categoria dell'errore: chiave di ``EXIT_CODES``."""
     # Prima i tipi specifici: JsonRepairError è anche un ValueError.
+    if isinstance(error, Cancelled):
+        return "cancelled"
     if isinstance(error, (ProviderError, JsonRepairError)):
         return "provider"
     if isinstance(error, (UsageError, ValueError)):
@@ -49,6 +57,11 @@ def describe(error: BaseException) -> str:
     """Messaggio per l'utente, con il rimedio concreto."""
     category = classify(error)
     detail = str(error) or type(error).__name__
+    if category == "cancelled":
+        return (
+            "Lavoro annullato. Il journal e la cache restano: puoi riprendere con --resume "
+            "senza ripagare le pagine già fatte."
+        )
     if category == "config":
         return (
             f"Configurazione non valida: {detail}. "

@@ -4,9 +4,10 @@ Contiene il job (``pipeline``) e la costruzione delle dipendenze reali (``runtim
 Nessuna logica di dominio: qui si compone soltanto.
 """
 
+from .job_result import JobResult
 from .journal import Journal, load_journal, remove_journal, save_journal
 from .page_plan import PagePlan, UnitTarget, build_plans
-from .pipeline import JobResult, JobSpec, TranslationJob, block_units
+from .pipeline import JobSpec, TranslationJob, block_units
 from .runtime import Runtime, build_runtime
 
 __all__ = [

@@ -15,7 +15,7 @@ from pathlib import Path
 
 from pdfbook import __version__
 from pdfbook.app import JobSpec, TranslationJob, build_runtime
-from pdfbook.app.errors import EXIT_CODES, classify, describe
+from pdfbook.app.errors import EXIT_CODES, Cancelled, classify, describe
 from pdfbook.app.metrics import format_metrics, from_summary
 from pdfbook.config.settings import LOG_LEVELS, load_settings, parse_glossary
 from pdfbook.qa.report import gate, parse_report
@@ -138,6 +138,9 @@ def _translate(args: argparse.Namespace) -> int:
     started = time.perf_counter()
     try:
         result = TranslationJob(spec, runtime).run(progress=_progress)
+    except KeyboardInterrupt:
+        print(describe(Cancelled("interrotto da tastiera")), file=sys.stderr)
+        return EXIT_CODES["cancelled"]
     except Exception as exc:  # noqa: BLE001 - l'errore diventa un messaggio e un codice
         print(describe(exc), file=sys.stderr)
         return EXIT_CODES[classify(exc)]

@@ -140,6 +140,10 @@ pdfbook translate libro.pdf libro_IT.pdf --resume
 Il journal registra pagina per pagina; la cache contiene le traduzioni già pagate. Alla
 ripresa non si richiama il provider per ciò che è già stato fatto (verificato dai test).
 
+**Annullare**: nella GUI c'è il pulsante *Annulla*; da terminale `Ctrl+C`. Il job si ferma a
+fine pagina (exit code 130), journal e cache restano: `--resume` riparte da lì senza ripagare
+le pagine già tradotte.
+
 Se hai cambiato provider, modello, lingua, glossario o stile, la cache **non** viene riusata:
 la chiave include la configurazione.
 

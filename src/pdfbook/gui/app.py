@@ -66,6 +66,13 @@ class TranslatorApp(ctk.CTk):
         )
         self.start_button.grid(row=4, column=0, padx=20, pady=(10, 5), sticky="ew")
 
+        self.cancel_button = ctk.CTkButton(
+            main, text="Annulla", height=28, fg_color="#7a2f2f", hover_color="#934040",
+            state="disabled", command=self._cancel_run,
+        )
+        self.cancel_button.grid(row=4, column=0, padx=20, pady=(6, 5), sticky="e")
+        self.cancel_requested = False
+
         self.progress = ctk.CTkProgressBar(main)
         self.progress.grid(row=5, column=0, padx=20, pady=5, sticky="ew")
         self.progress.set(0.0)
@@ -139,6 +146,8 @@ class TranslatorApp(ctk.CTk):
             page_end=self._int_or_none(self.page_end.get()),
         )
         self.start_button.configure(state="disabled", text="Traduzione in corso...")
+        self.cancel_button.configure(state="normal")
+        self.cancel_requested = False
         self.progress.set(0.0)
         self.tracker.begin(time.perf_counter(), 0)
         self.started_at = time.perf_counter()
@@ -148,12 +157,20 @@ class TranslatorApp(ctk.CTk):
     def _worker(self, spec: JobSpec) -> None:
         try:
             runtime = build_runtime(spec.input_pdf, spec.settings)
-            result = TranslationJob(spec, runtime).run(progress=self._progress)
+            result = TranslationJob(spec, runtime).run(
+                progress=self._progress, cancel=lambda: self.cancel_requested
+            )
         except Exception as exc:  # noqa: BLE001 - l'errore va mostrato, non propagato
             message = describe(exc)
             self.after(0, lambda: self._failed(message))
             return
         self.after(0, lambda: self._finished(result))
+
+    def _cancel_run(self) -> None:
+        """Annullamento cooperativo: il job si ferma prima della pagina successiva."""
+        self.cancel_requested = True
+        self.cancel_button.configure(state="disabled")
+        self._log("Annullamento richiesto: mi fermo a fine pagina, journal e cache restano.")
 
     # ---------- callback UI ----------
 
@@ -167,6 +184,7 @@ class TranslatorApp(ctk.CTk):
 
     def _finished(self, result: JobResult) -> None:
         self.start_button.configure(state="normal", text="Avvia traduzione")
+        self.cancel_button.configure(state="disabled")
         self.progress.set(1.0)
         metrics = from_summary(
             result.summary,
@@ -190,6 +208,7 @@ class TranslatorApp(ctk.CTk):
 
     def _failed(self, message: str) -> None:
         self.start_button.configure(state="normal", text="Avvia traduzione")
+        self.cancel_button.configure(state="disabled")
         self._log(f"[ERRORE] {message}")
         messagebox.showerror("Errore", message)
 

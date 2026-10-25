@@ -143,7 +143,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 | # | Deliverable | Note |
 |---|---|---|
-| 6.1 | GUI: anteprima prima/dopo con diff, ispettore issue per pagina, resume, drag & drop, ETA, annulla | oggi la GUI è funzionale ma "cieca" sull'output | **parziale**: `gui/presenter.py` (ETA, digest issue, riepilogo, coppie per l'anteprima) e GUI che scrive il report HTML a fine run; drag & drop, anteprima a schermo e annulla restano da fare |
+| 6.1 | GUI: anteprima prima/dopo con diff, ispettore issue per pagina, resume, drag & drop, ETA, annulla | oggi la GUI è funzionale ma "cieca" sull'output | **parziale**: presenter (ETA, digest issue, riepilogo, coppie per l'anteprima), report HTML a fine run, **annulla cooperativo** (pulsante GUI + `Cancelled`/exit 130); drag & drop e anteprima a schermo restano da fare |
 | 6.2 | CLI: `pdfbook qa`, `report --html`, `batch` su più file | | **parziale**: `pdfbook qa` e `pdfbook report` (HTML statico); `batch` ancora da fare |
 | 6.3 | Packaging multi-OS in CI (PyInstaller matrix), release firmate Windows, AppImage Linux | oggi c'è solo il lanciatore | **parziale**: job `package` in CI (sdist+wheel, `twine check`, install in ambiente pulito); PyInstaller e release firmate restano da fare |
 | 6.4 | Guida utente con screenshot, troubleshooting, FAQ, video breve | docs/ | **parziale**: `docs/GUIDA.md` (installazione, primo libro, report, problemi frequenti); screenshot e video ancora da fare |

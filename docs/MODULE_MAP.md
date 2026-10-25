@@ -80,6 +80,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/app/visual_qa.py` | app | Fotografia prima/dopo e confronto visivo di pagina | 60 | **esistente (Fase 0)** | `tests/unit/test_checks_visual.py` |
 | `src/pdfbook/app/costs.py` | app | Contabilità token/costo e tetto di spesa | 60 | **esistente (Fase 3.3)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/metrics.py` | app | Metriche di run: pagine/min, token, costo/pagina, cache hit, issue | 110 | **esistente (Fase 7)** | `tests/unit/test_metrics.py` |
+| `src/pdfbook/app/job_result.py` | app | Contratto di uscita del job (file, report, conteggi, violazioni) | 45 | **esistente (Fase 6.1)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/checkpoints.py` | app | Fingerprint del lavoro, journal di avanzamento, salvataggio periodico della cache | 110 | **esistente (Fase 3.1)** | `tests/unit/test_journal.py` |
 | `src/pdfbook/app/journal.py` | app | Modello e I/O atomico del journal | 110 | **esistente (Fase 3.1)** | `tests/unit/test_journal.py` |
 | `src/pdfbook/app/errors.py` | app | Classificazione errori, codici di uscita e messaggi azionabili | 90 | **esistente (Fase 3.4)** | `tests/unit/test_errors.py` |

@@ -23,8 +23,23 @@ class ClassifyTest(unittest.TestCase):
 
     def test_exit_codes_are_stable(self):
         self.assertEqual(
-            EXIT_CODES, {"ok": 0, "gate": 1, "config": 2, "input": 3, "provider": 4, "layout": 5}
+            EXIT_CODES,
+            {
+                "ok": 0,
+                "gate": 1,
+                "config": 2,
+                "input": 3,
+                "provider": 4,
+                "layout": 5,
+                "cancelled": 130,
+            },
         )
+
+    def test_cancelled_is_its_own_category(self):
+        from pdfbook.app.errors import Cancelled, classify, describe
+
+        self.assertEqual(classify(Cancelled("basta")), "cancelled")
+        self.assertIn("--resume", describe(Cancelled("basta")))
 
 
 class DescribeTest(unittest.TestCase):
