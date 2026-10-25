@@ -75,6 +75,8 @@ sovrascrivere da riga di comando.
 | `PDFBOOK_INLINE_STYLES` | conserva grassetto/corsivo/apici | `1` |
 | `PDFBOOK_READING_ORDER` | ricostruisce l'ordine delle pagine a due colonne | `1` |
 | `PDFBOOK_VISUAL_QA` | controllo visivo (SSIM mascherato) | `1` |
+| `PDFBOOK_OCR` | `auto` usa ocrmypdf sulle scansioni, `off` lo disattiva | `auto` |
+| `PDFBOOK_LOG_FILE` | dove scrivere il log (rotazione 2 MB × 3) | cartella di sistema |
 
 ### Modello locale (nessun costo, nessuna chiave)
 

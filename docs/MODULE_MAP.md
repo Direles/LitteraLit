@@ -72,6 +72,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/domain/ports.py` | domain | Protocol: `TranslatorPort`, `ShortenerPort`, `FontResolverPort`, `ProgressPort`, `DocumentSource` | 120 | **esistente** | — (solo tipi) |
 | `src/pdfbook/config/settings.py` | config | Impostazioni da env/`.env`, validazione, nessun segreto su disco | 200 | **esistente (M11)** | `tests/unit/test_settings.py` |
 | `src/pdfbook/config/pricing.py` | config | Tabella prezzi indicativi e stima del costo di una run | 70 | **esistente (Fase 3.3)** | `tests/unit/test_pricing_ratelimit.py` |
+| `src/pdfbook/config/logging.py` | config | Log su file con rotazione, idempotente, senza segreti | 90 | **esistente (Fase 3.6)** | `tests/unit/test_logging_setup.py` |
 | `src/pdfbook/app/runtime.py` | app | Costruzione dipendenze reali (PDF, provider, cache, font, canvas) | 110 | **esistente (M11)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/pipeline.py` | app | Job di documento: pagine → batch → render → QA → salvataggio | 330 | **esistente (M11/Fase 3)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/page_translator.py` | app | Traduzione della pagina: unità, split delle continuazioni, glossario | 110 | **esistente (Fase 2/5)** | `tests/unit/test_app_pipeline.py` |

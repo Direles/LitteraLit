@@ -240,10 +240,12 @@ def _gui() -> int:
 
 
 def _configure_logging(level: str) -> None:
-    logging.basicConfig(
-        level=getattr(logging, level.upper(), logging.INFO),
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
+    from pdfbook.config.logging import configure
+
+    path = configure(level, console=False)
+    if path is None:
+        logging.basicConfig(level=getattr(logging, level.upper(), logging.INFO))
+    logging.getLogger(__name__).debug("log su file: %s", path)
 
 
 def _progress(current: int, total: int, message: str) -> None:

@@ -7,6 +7,7 @@ traduzione: tutto vive nei layer sottostanti.
 
 from __future__ import annotations
 
+import logging
 import os
 import threading
 import time
@@ -195,6 +196,7 @@ class TranslatorApp(ctk.CTk):
     def _log(self, message: str) -> None:
         self.log_box.insert("end", f"{message}\n")
         self.log_box.see("end")
+        logging.getLogger("pdfbook.gui").info(message)
 
     @staticmethod
     def _int_or_none(raw: str) -> int | None:
@@ -205,6 +207,10 @@ class TranslatorApp(ctk.CTk):
 
 
 def main() -> None:
+    """Avvia la GUI (log su file accanto a quelli della CLI)."""
+    from pdfbook.config.logging import configure
+
+    configure("INFO")
     TranslatorApp().mainloop()
 
 
