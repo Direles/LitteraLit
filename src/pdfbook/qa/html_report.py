@@ -38,6 +38,12 @@ code { background: #f5f5f7; padding: .1rem .3rem; border-radius: 4px; font-size:
          padding: .35rem .6rem; font-size: .85rem; }
 .count b { font-variant-numeric: tabular-nums; }
 .empty { padding: 2rem; text-align: center; color: #6e6e73; }
+.summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+           gap: .5rem; margin: 1rem 0; }
+.summary div { background: #fff; border: 1px solid #ececf1; border-radius: 8px;
+              padding: .5rem .7rem; font-size: .85rem; }
+.summary span { display: block; color: #6e6e73; font-size: .75rem; text-transform: uppercase;
+                letter-spacing: .04em; }
 """
 
 _BLOCKING = frozenset({"untranslated_unresolved", "glyph_missing", "text_missing", "split_failed"})
@@ -49,6 +55,7 @@ def html_from_report(data: Mapping[str, Any] | str | Path) -> str:
     issues = sorted(report.issues, key=lambda issue: (issue.page, issue.kind.value))
     counts = Counter(issue.kind.value for issue in issues)
     title = _title(data)
+    summary = data.get("summary") if isinstance(data, Mapping) else None
     parts = [
         "<!doctype html>",
         "<html lang=\"it\"><head><meta charset=\"utf-8\">",
@@ -56,6 +63,7 @@ def html_from_report(data: Mapping[str, Any] | str | Path) -> str:
         f"<style>{_STYLE}</style></head><body>",
         f"<h1>Report QA — {escape(title)}</h1>",
         f"<p class=\"sub\">{len(issues)} issue su {_pages(issues)} pagine</p>",
+        _summary_html(summary),
         _counts_html(counts),
         _table(issues) if issues else "<p class=\"empty\">Nessuna issue registrata.</p>",
         "</body></html>",
@@ -80,6 +88,30 @@ def _counts_html(counts: Counter[str]) -> str:
         for kind, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
     ]
     return "<div class=\"counts\">" + "".join(chips) + "</div>"
+
+
+def _summary_html(summary: Any) -> str:
+    """Riquadri con i numeri della run (blocchi, token, costo), se il report li contiene."""
+    if not isinstance(summary, Mapping):
+        return ""
+    fields = (
+        ("blocks", "blocchi"),
+        ("perfect", "perfetti"),
+        ("tokens_in", "token in"),
+        ("tokens_out", "token out"),
+        ("cost_usd_micro", "costo (USD)"),
+        ("cache_hits", "cache hit"),
+        ("base14_fallback", "base-14"),
+        ("bundle_fonts_used", "font bundle"),
+    )
+    cards: list[str] = []
+    for key, label in fields:
+        value = summary.get(key)
+        if value in (None, 0, ""):
+            continue
+        shown = f"{value / 1_000_000:.4f}" if key == "cost_usd_micro" else str(value)
+        cards.append(f"<div><span>{escape(label)}</span>{escape(shown)}</div>")
+    return f"<div class=\"summary\">{''.join(cards)}</div>" if cards else ""
 
 
 def _table(issues) -> str:

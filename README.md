@@ -64,6 +64,17 @@ Guida completa (installazione, primo libro, report, problemi frequenti): [`docs/
 
 Su *Agile Estimating and Planning* (365 pagine, 4.207 blocchi): 97,7% dei blocchi entra nelle righe originali, output 2,8 MB contro 7,0 MB della prima versione, testo ricercabile. Dettagli e limiti in [`docs/architecture/08-qualita.md`](docs/architecture/08-qualita.md).
 
+### SLO dichiarati
+
+| Dimensione | Obiettivo | Come si verifica |
+|---|---|---|
+| Affidabilità | 0 eccezioni non gestite su 500 pagine | `tests/integration/test_stress.py` |
+| Ripresa | 0 chiamate al provider dopo `--resume` | stesso test, `test_resume_does_not_call_the_provider_again` |
+| Gate QA | `untranslated_unresolved`, `glyph_missing`, `text_missing`, `split_failed` a 0 | `pdfbook qa report.json` |
+| Throughput | limitato dal provider, non dal rendering locale | riga di metriche in CLI (pagine/min) |
+| Costo | visibile per pagina e per run, con tetto `PDFBOOK_MAX_COST` | `Result.summary`, report HTML |
+| Cache | riuso fra run identiche, partizione per provider/modello/lingua/glossario/stile | `pdfbook cache` |
+
 ## Struttura del repository
 
 ```

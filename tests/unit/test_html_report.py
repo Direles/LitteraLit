@@ -57,6 +57,15 @@ class HtmlTest(unittest.TestCase):
         html = html_from_report(REPORT)
         self.assertIn('<span class="count">clipped <b>1</b></span>', html)
 
+    def test_summary_cards_are_rendered(self):
+        html = html_from_report(REPORT)
+        self.assertIn("blocchi", html)
+        self.assertIn(">10<", html)
+
+    def test_summary_cards_are_optional(self):
+        html = html_from_report({"summary": {"cost_usd_micro": 2_500_000}, "pages": []})
+        self.assertIn("2.5000", html)
+
 
 class WriteTest(unittest.TestCase):
     def setUp(self):

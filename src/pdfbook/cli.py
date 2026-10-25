@@ -9,11 +9,14 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+import time
+from collections import Counter
 from pathlib import Path
 
 from pdfbook import __version__
 from pdfbook.app import JobSpec, TranslationJob, build_runtime
 from pdfbook.app.errors import EXIT_CODES, classify, describe
+from pdfbook.app.metrics import format_metrics, from_summary
 from pdfbook.config.settings import LOG_LEVELS, load_settings, parse_glossary
 from pdfbook.qa.report import gate, parse_report
 
@@ -132,24 +135,27 @@ def _translate(args: argparse.Namespace) -> int:
     )
     logging.info("avvio job: %s", settings.redacted())
     runtime = build_runtime(spec.input_pdf, settings)
+    started = time.perf_counter()
     try:
         result = TranslationJob(spec, runtime).run(progress=_progress)
     except Exception as exc:  # noqa: BLE001 - l'errore diventa un messaggio e un codice
         print(describe(exc), file=sys.stderr)
         return EXIT_CODES[classify(exc)]
+    metrics = from_summary(
+        result.summary,
+        pages=result.pages,
+        blocks=result.blocks,
+        seconds=time.perf_counter() - started,
+        issue_counts=Counter(issue.kind.value for issue in result.report.issues),
+    )
 
     print(f"PDF: {result.output_pdf}")
     print(f"Report QA: {result.report_path}")
-    print(f"Pagine: {result.pages} | blocchi: {result.blocks} | issue: {len(result.report.issues)}")
+    print(format_metrics(metrics))
     if result.resumed_pages:
         print(f"Ripresa: {result.resumed_pages} pagine già tradotte riutilizzate dalla cache")
     if result.glossary_suggestions:
         print("Glossario suggerito (termini ricorrenti, da rivedere): " + ", ".join(result.glossary_suggestions[:12]))
-    tokens = result.summary.get("tokens_in", 0) + result.summary.get("tokens_out", 0)
-    if tokens:
-        cost = result.summary.get("cost_usd_micro", 0) / 1_000_000
-        print(f"Token: {result.summary.get('tokens_in', 0)} in / {result.summary.get('tokens_out', 0)} out"
-              + (f" · costo stimato: {cost:.2f} USD" if cost else ""))
     violations = result.violations()
     for violation in violations:
         print(f"GATE: {violation}")

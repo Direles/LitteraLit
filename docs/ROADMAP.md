@@ -154,7 +154,8 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 ## Fase 7 — Scala e osservabilità (≈5 giorni)
 
-- metriche per run (pagine/min, token, costo, issue per tipo) e sommario HTML;
+- metriche per run (pagine/min, token, costo, issue per tipo) e sommario HTML: **fatto**
+  (`app/metrics.py`, riquadri nel report HTML, riga di metriche in CLI);
 - budget di performance: 500 pagine senza superare 4 GB RAM;
 - test di carico su libro grande; documentazione degli SLO nel README.
 

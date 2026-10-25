@@ -83,5 +83,7 @@ def build_runtime(input_pdf: str | os.PathLike[str], settings: AppSettings) -> R
             "system_fonts_used": resolver.stats.system_fallback,
             "bundle_fonts_used": resolver.stats.bundle_used,
             "base14_fallback": resolver.stats.base14_fallback,
+            "cache_hits": cache.hits,
+            "cache_misses": cache.misses,
         },
     )
