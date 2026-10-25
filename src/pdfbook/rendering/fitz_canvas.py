@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-import fitz
+import pymupdf as fitz
 
 from pdfbook.domain.models import Rect
 

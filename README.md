@@ -30,14 +30,27 @@ Traduce libri tecnici in PDF **conservando il layout**: redazione vettoriale del
 
 ## Avvio rapido
 
+### Doppio clic (nessuna installazione manuale)
+
+| Sistema | File da aprire |
+|---|---|
+| **Windows** | `start.cmd` |
+| **macOS** | `start.command` |
+| **Linux** | `start.sh` |
+
+Al primo avvio il lanciatore crea `.venv` e installa le dipendenze (~80 MB, serve internet),
+poi apre la GUI. Gli argomenti sono passati alla CLI: `start.cmd doctor`, `start.cmd translate in.pdf out.pdf`.
+
+### Riga di comando
+
 ```powershell
 py -m venv .venv; .venv\Scripts\Activate.ps1
 pip install -e ".[gui]"          # su server/CI basta `pip install -e .`
 $env:PDFBOOK_API_KEY = "..."     # oppure compila .env (mai committarlo)
 
+pdfbook gui                      # interfaccia desktop
 pdfbook translate libro.pdf libro-ITALIANO.pdf --pages 1-10
 pdfbook doctor                    # configurazione redatta + eventuale report QA
-pdfbook-gui                       # interfaccia desktop
 ```
 
 Configurazione tramite variabili `PDFBOOK_*` (vedi [`.env.example`](.env.example)).
@@ -56,8 +69,9 @@ src/pdfbook/     codice di produzione, per layer:
   fonts/         risoluzione font         translation/ provider LLM, cache, pipeline
   rendering/     redazione + TextWriter   qa/          report e gate
   app/           job di documento          config/      impostazioni (senza segreti)
-  gui/           interfaccia desktop       cli.py       translate / doctor
-tools/           modularity_check.py (gate di struttura)
+  gui/           interfaccia desktop       cli.py       translate / doctor / gui
+tools/           modularity_check.py, launch.py (avvio guidato)
+start.cmd / start.command / start.sh   lanciatori per Windows / macOS / Linux
 tests/           test unitari (272)
 docs/            documentazione modulare (indice: docs/architecture/README.md)
 legacy/          codice Gen 1 congelato (script storici)

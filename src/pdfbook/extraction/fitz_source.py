@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import fitz
+import pymupdf as fitz
 
 from pdfbook.domain.models import PageLayout
 

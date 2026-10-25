@@ -43,6 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = sub.add_parser("doctor", help="mostra la configurazione e verifica un report QA")
     doctor.add_argument("report", nargs="?", default=None)
 
+    sub.add_parser("gui", help="avvia l'interfaccia desktop")
+
     return parser
 
 
@@ -52,6 +54,8 @@ def main(argv: list[str] | None = None) -> int:
         return _translate(args)
     if args.command == "doctor":
         return _doctor(args)
+    if args.command == "gui":
+        return _gui()
     return 2
 
 
@@ -127,6 +131,14 @@ def _parse_pages(raw: str | None) -> tuple[int | None, int | None]:
         return int(start), int(end)
     page = int(raw)
     return page, page
+
+
+def _gui() -> int:
+    """Avvia la GUI (import ritardato: ``customtkinter`` serve solo qui)."""
+    from pdfbook.gui.app import main as gui_main
+
+    gui_main()
+    return 0
 
 
 def _configure_logging(level: str) -> None:

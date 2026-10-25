@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-import fitz
+import pymupdf as fitz
 
 __all__ = ["PdfFontSource", "make_fitz_font"]
 

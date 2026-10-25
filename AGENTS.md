@@ -38,7 +38,7 @@ I budget non sono consigli: sono la condizione che rende possibile il routing di
 
 | Zona | Contenuto ammesso |
 |---|---|
-| radice | solo `README.md`, `AGENTS.md`, `SECURITY.md`, `pyproject.toml`, `.gitignore`, `.env.example`, stub di reindirizzamento |
+| radice | solo `README.md`, `AGENTS.md`, `SECURITY.md`, `LICENSE`, `ARCHITETTURA.md`, `pyproject.toml`, `.gitignore`, `.env.example`, i lanciatori `start.cmd`/`start.command`/`start.sh`, stub di reindirizzamento |
 | `src/pdfbook/**` | codice di produzione, organizzato per layer (`domain/`, `extraction/`, `layout/`, `fonts/`, `translation/`, `rendering/`, `qa/`, `gui/`, `config/`) |
 | `tools/**` | script di sviluppo e verifica (solo stdlib o dipendenze dev) |
 | `tests/**` | test, speculari a `src/pdfbook/**` |
