@@ -99,7 +99,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 3.2 | Parallelismo controllato dei chunk + rate limiter + `Retry-After` | `translation/ratelimit.py`, `translation/pipeline.py` | ✅ **fatto** (workers opt-in; le pagine restano sequenziali per via dello stitching) |
 | 3.3 | **Tracking costi/token** per pagina e per run, con `--max-cost` | `config/pricing.py`, `app/costs.py` | ✅ **fatto** (stima indicativa, tetto bloccante, ripresa possibile) |
 | 3.4 | Tassonomia errori utente: codici di uscita stabili e messaggi con il rimedio | `app/errors.py`, `cli.py`, `gui/app.py` | ✅ **fatto** (8 test) |
-| 3.5 | Cache: TTL/versione, `pdfbook cache stats|prune`, export TM per documento | `translation/cache.py`, `cli.py` | |
+| 3.5 | Cache: TTL/versione, `pdfbook cache`, export TM per documento | `translation/cache.py`, `cli.py` | **fatto**: timestamp per voce, `pdfbook cache [--prune --max-age --max-entries]`; export TM ancora da fare |
 | 3.6 | Log strutturato su file con rotazione; nessun `print` in produzione | `config/logging.py` | |
 | 3.7 | Test di robustezza: 500 pagine sintetiche, 429 indotti, interruzione a metà | `tests/integration/` | |
 

@@ -102,6 +102,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/fonts/fitz_adapter.py` | fonts | Unico punto con `fitz`: `PdfFontSource`, `make_fitz_font` | 60 | **esistente (M5)** | smoke test |
 | `src/pdfbook/translation/json_repair.py` | translation | Parsing JSON tollerante e riparazione | 190 | **esistente (M1)** | `tests/unit/test_json_repair.py` |
 | `src/pdfbook/translation/cache.py` | translation | TM con chiave composta + scrittura atomica | 190 | **esistente (M3)** | `tests/unit/test_cache.py` |
+| `src/pdfbook/translation/cache_prune.py` | translation | Potatura pura della TM per età e numero di voci | 90 | **esistente (Fase 3.5)** | `tests/unit/test_cache_prune.py` |
 | `src/pdfbook/translation/ratelimit.py` | translation | Intervallo minimo fra chiamate, thread-safe | 60 | **esistente (Fase 3.2)** | `tests/unit/test_pricing_ratelimit.py` |
 | `src/pdfbook/translation/prompts.py` | translation | Prompt di traduzione e compressione (glossario, contesto troncato) | 140 | **esistente (M4)** | `tests/unit/test_prompts.py` |
 | `src/pdfbook/translation/pipeline.py` | translation | Cache → chunking → provider → riparazione, con retry/backoff | 230 | **esistente (M4)** | `tests/unit/test_pipeline.py` |

@@ -50,6 +50,12 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = sub.add_parser("doctor", help="mostra la configurazione e verifica un report QA")
     doctor.add_argument("report", nargs="?", default=None)
 
+    cache = sub.add_parser("cache", help="statistiche e pulizia della translation memory")
+    cache.add_argument("--cache", default=None, help="percorso del file di cache")
+    cache.add_argument("--prune", action="store_true", help="elimina le voci vecchie/in eccesso")
+    cache.add_argument("--max-age", type=float, default=None, help="età massima in giorni")
+    cache.add_argument("--max-entries", type=int, default=None, help="numero massimo di voci")
+
     sub.add_parser("gui", help="avvia l'interfaccia desktop")
 
     return parser
@@ -61,6 +67,8 @@ def main(argv: list[str] | None = None) -> int:
         return _translate(args)
     if args.command == "doctor":
         return _doctor(args)
+    if args.command == "cache":
+        return _cache(args)
     if args.command == "gui":
         return _gui()
     return 2
@@ -160,6 +168,29 @@ def _parse_pages(raw: str | None) -> tuple[int | None, int | None]:
         return int(start), int(end)
     page = int(raw)
     return page, page
+
+
+def _cache(args: argparse.Namespace) -> int:
+    """Statistiche e potatura della translation memory: nessuna chiave viene stampata."""
+    from pdfbook.translation.cache import TranslationCache
+
+    settings = load_settings(env_file=ENV_FILE)
+    path = args.cache or settings.cache_path
+    cache = TranslationCache.for_maintenance(path)
+    if not cache.path.exists():
+        print(f"Cache assente: {path}")
+        return 0
+    before = cache.entries
+    removed = 0
+    if args.prune:
+        removed = cache.prune(max_entries=args.max_entries, max_age_days=args.max_age)
+    stats = cache.stats()
+    print(f"Cache: {cache.path}")
+    print(f"  voci: {before} -> {stats['entries']} (rimosse {removed})")
+    print(f"  dimensione: {stats['bytes'] / 1024:.1f} KB")
+    if not args.prune:
+        print("  usa --prune --max-age 90 per liberare spazio")
+    return 0
 
 
 def _gui() -> int:

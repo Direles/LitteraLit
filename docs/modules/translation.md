@@ -10,7 +10,8 @@
 | Modulo | Responsabilità | Cosa NON fa |
 |---|---|---|
 | `json_repair.py` | Risposta grezza → `dict[str, str]` con scala di degradazione deterministica | Non chiama API, non conosce i provider, non decide i retry |
-| `cache.py` | TM persistente, partizionata per configurazione, atomica e thread-safe | Non traduce, non fa pruning/TTL |
+| `cache.py` | TM persistente, partizionata per configurazione, atomica e thread-safe | Non traduce; la potatura è delegata a `cache_prune.py` |
+| `cache_prune.py` | Potatura pura della TM per età e numero di voci | Non fa I/O e non conosce la partizione |
 | `providers/base.py` | Trasporto HTTP comune: timeout, `ProviderError`, `error_detail`, `post_json` | Nessun retry, nessuna interpretazione del contenuto |
 | `providers/openai_compatible.py` | OpenAI, DeepSeek e endpoint custom (protocollo identico) | Non conosce il registry né i nomi commerciali |
 | `providers/gemini.py` | `generateContent`, chiave in header | Nessun forcing di JSON lato server (affidato a M1) |
@@ -62,7 +63,9 @@ TranslationCache(path, partition, *, autosave_every=25)
 TranslationCache.for_settings(path, settings, **kwargs)
 .get(text) / .contains(text) / .put(text, translation) / .put_many({testo: traduzione})
 .save() -> bool          # atomico; False se la scrittura fallisce
-.entries / .dirty / .stats()
+.entries / .dirty / .stats()                     # stats include bytes
+.prune(max_entries=None, max_age_days=None) -> int
+TranslationCache.for_maintenance(path)           # solo prune/stats, senza partizione
 ```
 
 ### Perché la chiave è composta (correzione del difetto §11.2/2)
@@ -88,6 +91,24 @@ potenzialmente avvelenate.
 | Robustezza | file corrotto o con valori non stringa → warning + ripartenza pulita |
 | Nessuna perdita silenziosa | `save()` restituisce `False` e logga l'errore di I/O |
 | Nessun segreto nei log | si loggano solo percorsi e messaggi d'errore |
+
+### Formato delle voci e potatura (Fase 3.5)
+
+Ogni voce è ``{"v": traduzione, "t": epoch}``. Il formato legacy (valore stringa) resta
+leggibile: ``t = 0`` significa "data sconosciuta", quindi la voce non scade per età ma è la
+prima a cadere quando serve spazio.
+
+```python
+prune(entries, max_entries=None, max_age_days=None, now=None) -> (tenute, rimosse)
+```
+
+`TranslationCache.prune` applica la funzione, riscrive il file solo se qualcosa è cambiato e
+restituisce il numero di voci rimosse. Da CLI:
+
+```bash
+pdfbook cache                       # statistiche: voci, dimensione
+pdfbook cache --prune --max-age 90 --max-entries 200000
+```
 
 ## `ratelimit.py` e `Completion` (Fase 3.2/3.3)
 

@@ -23,10 +23,13 @@ import json
 import logging
 import os
 import threading
+import time
 from collections.abc import Mapping
 from pathlib import Path
 
 from pdfbook.domain.models import TranslationSettings
+
+from .cache_prune import prune
 
 __all__ = ["CACHE_VERSION", "TranslationCache", "make_key"]
 
@@ -62,7 +65,7 @@ class TranslationCache:
         self.autosave_every = max(0, autosave_every)
         self.hits = 0
         self.misses = 0
-        self._entries: dict[str, str] | None = None
+        self._entries: dict[str, object] | None = None
         self._pending = 0
         self._dirty = False
         self._lock = threading.RLock()
@@ -80,7 +83,8 @@ class TranslationCache:
 
     def get(self, text: str) -> str | None:
         with self._lock:
-            value = self._data().get(make_key(text, self.partition))
+            raw = self._data().get(make_key(text, self.partition))
+            value = _value(raw)
             if value is None:
                 self.misses += 1
             else:
@@ -94,9 +98,9 @@ class TranslationCache:
     def put(self, text: str, translation: str) -> None:
         with self._lock:
             key = make_key(text, self.partition)
-            if self._data().get(key) == translation:
+            if _value(self._data().get(key)) == translation:
                 return
-            self._data()[key] = translation
+            self._data()[key] = {"v": translation, "t": int(time.time())}
             self._dirty = True
             self._pending += 1
             if self.autosave_every and self._pending >= self.autosave_every:
@@ -146,16 +150,51 @@ class TranslationCache:
 
     def stats(self) -> dict[str, int]:
         with self._lock:
-            return {"entries": len(self._data()), "hits": self.hits, "misses": self.misses}
+            return {
+                "entries": len(self._data()),
+                "hits": self.hits,
+                "misses": self.misses,
+                "bytes": self.size_bytes(),
+            }
+
+    def size_bytes(self) -> int:
+        try:
+            return self.path.stat().st_size
+        except OSError:
+            return 0
+
+    # ---------- manutenzione ----------
+
+    @classmethod
+    def for_maintenance(cls, path: str | os.PathLike[str]) -> TranslationCache:
+        """Cache aperta senza partizione: serve solo a ``prune``/``stats``, non a tradurre."""
+        return cls(path, "maintenance", autosave_every=0)
+
+    def prune(
+        self,
+        *,
+        max_entries: int | None = None,
+        max_age_days: float | None = None,
+    ) -> int:
+        """Elimina le voci vecchie o in eccesso; restituisce quante ne ha rimosse."""
+        with self._lock:
+            kept, removed = prune(
+                self._data(), max_entries=max_entries, max_age_days=max_age_days
+            )
+            if removed or kept != self._data():
+                self._entries = dict(kept)
+                self._dirty = True
+                self.save()
+            return removed
 
     # ---------- interno ----------
 
-    def _data(self) -> dict[str, str]:
+    def _data(self) -> dict[str, object]:
         if self._entries is None:
             self._entries = self._load()
         return self._entries
 
-    def _load(self) -> dict[str, str]:
+    def _load(self) -> dict[str, object]:
         if not self.path.exists():
             return {}
         try:
@@ -166,4 +205,14 @@ class TranslationCache:
         if not isinstance(raw, dict):
             log.warning("cache con formato inatteso in %s: riparto da vuota", self.path)
             return {}
-        return {str(k): v for k, v in raw.items() if isinstance(v, str)}
+        return {str(k): v for k, v in raw.items() if _value(v) is not None}
+
+
+def _value(raw: object) -> str | None:
+    """Estrae la traduzione sia dal formato corrente sia da quello legacy."""
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, dict):
+        value = raw.get("v")
+        return value if isinstance(value, str) else None
+    return None

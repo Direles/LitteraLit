@@ -41,7 +41,10 @@ class CacheTest(unittest.TestCase):
         self.assertIsNone(self.cache.get("ciao"))
         self.cache.put("ciao", "hello")
         self.assertEqual(self.cache.get("ciao"), "hello")
-        self.assertEqual(self.cache.stats(), {"entries": 1, "hits": 1, "misses": 1})
+        stats = self.cache.stats()
+        self.assertEqual(stats["entries"], 1)
+        self.assertEqual(stats["hits"], 1)
+        self.assertEqual(stats["misses"], 1)
 
     def test_contains(self):
         self.cache.put("ciao", "hello")
