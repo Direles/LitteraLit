@@ -16,13 +16,15 @@ from pdfbook.translation.providers.base import ProviderError
 
 
 class FakeCanvas:
-    def __init__(self, fail_containing=None):
+    def __init__(self, fail_containing=None, snapshot_value=255):
         self.width = 612.0
         self.height = 792.0
         self.redactions = []
         self.applied = 0
         self.runs = []
         self.fail_containing = fail_containing
+        self.snapshot_value = snapshot_value
+        self.snapshots = 0
 
     def redact(self, box):
         self.redactions.append(box)
@@ -39,6 +41,19 @@ class FakeCanvas:
     def text(self):
         """Testo come lo vedrebbe l'estrattore: righe separate da spazio."""
         return " ".join(run.text for run in self.runs)
+
+    def snapshot(self, dpi: float = 72.0):
+        """Immagine uniforme: i test visivi usano canvas dedicati."""
+        from pdfbook.qa.checks_visual import PageImage
+
+        self.snapshots += 1
+        size = 32
+        return PageImage(
+            pixels=bytes([self.snapshot_value]) * (size * size),
+            width=size,
+            height=size,
+            pt_width=self.width,
+        )
 
 
 class FakeFont:

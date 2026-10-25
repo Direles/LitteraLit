@@ -40,16 +40,20 @@ Senza numeri, "premium" è un'opinione. Questi sono i target che ogni fase deve 
 
 ## Fase 0 — Fondamenta di misura (≈5 giorni) · *prerequisito*
 
-| # | Deliverable | File | Test |
+| # | Deliverable | File | Stato |
 |---|---|---|---|
-| 0.1 | Confronto visivo originale↔output: SSIM, densità inchiostro, mappa di diff per pagina | `src/pdfbook/qa/checks_visual.py` | 8-10 unit con immagini sintetiche |
-| 0.2 | Issue `VISUAL_DRIFT` con soglia configurabile, integrata nel report | `qa/report.py` (nuovo `IssueKind`) | roundtrip report |
-| 0.3 | Set di fixture PDF **sintetiche** (licenza pulita): nativo semplice, 2 colonne, indice, tabella, scansione simulata | `tests/fixtures/pdf/` + generatore `tools/make_fixtures.py` | — |
-| 0.4 | Test golden: pipeline con provider finto → snapshot del report QA (JSON normalizzato) | `tests/golden/` | 5 snapshot |
-| 0.5 | Baseline metriche per fixture, usata come soglia di regressione in CI | `tests/golden/baseline.json` | — |
-| 0.6 | CI: job "regressione visiva" + `pip-licenses` + `gitleaks` | `.github/workflows/ci.yml` | — |
+| 0.1 | Confronto visivo originale↔output: SSIM, densità inchiostro, mappa di diff per pagina | `src/pdfbook/qa/checks_visual.py` | ✅ **fatto** (19 test) |
+| 0.2 | Issue `VISUAL_DRIFT` con soglia configurabile, integrata nel report | `qa/report.py` (nuovo `IssueKind`) | ✅ **fatto** (informativa, non bloccante) |
+| 0.3 | Fixture PDF **sintetiche** (licenza pulita): nativo semplice, 2 colonne, indice, tabella, scansione simulata | `tests/integration/` (generate al volo, nessun binario nel repo) | ⏳ **parziale** (nativo semplice; mancano colonne/indice/tabella) |
+| 0.4 | Test golden: pipeline con provider finto → snapshot del report QA (JSON normalizzato) | `tests/golden/` | ⏳ da fare |
+| 0.5 | Baseline metriche per fixture, usata come soglia di regressione in CI | `tests/golden/baseline.json` | ⏳ da fare |
+| 0.6 | CI: job "regressione visiva" + `pip-licenses` + `gitleaks` | `.github/workflows/ci.yml` | ⏳ da fare (i test di integrazione girano già) |
 
 **Accettazione**: una modifica al renderer che peggiora SSIM oltre 0,01 fa fallire la CI.
+
+**Stato**: 0.1 e 0.2 chiusi. Il confronto è stato reso **mascherato** (SSIM fuori dalle aree di
+testo, mappa dell'inchiostro per riquadri): un SSIM globale originale↔tradotto non avrebbe
+senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, golden, licenze/segreti).
 
 **Rischio**: font non deterministici fra macchine → SSIM rumoroso. Mitigazione: Fase 1.4 (font bundle).
 

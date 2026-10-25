@@ -54,6 +54,7 @@ class IssueKind(StrEnum):
     CLIPPED = "clipped"
     TEXT_MISSING = "text_missing"
     SCAN_FALLBACK = "scan_fallback"
+    VISUAL_DRIFT = "visual_drift"
 
 
 @dataclass(frozen=True)

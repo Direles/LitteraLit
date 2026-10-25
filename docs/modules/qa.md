@@ -56,6 +56,27 @@ mancanti produce `text_missing`.
 | Pipeline con canvas che disegna `—` come `·` | `glyph_missing` → gate **FAIL** |
 | Output nuovo (M8+M9+M11, 2 pagine) | 0 issue, gate **PASS** (nessun falso positivo) |
 
+## Controllo visivo (Fase 0)
+
+```python
+snapshot = canvas.snapshot(dpi=72)          # prima della redazione
+... render_page ...
+snapshot_dopo = canvas.snapshot(dpi=72)
+check_page_visual(page, before, after, text_boxes=...)
+```
+
+Due metriche complementari, perché un confronto pixel-per-pixel originale→tradotto **non** ha
+senso quando cambia la lingua:
+
+| Metrica | Cosa misura | Soglia |
+|---|---|---|
+| **SSIM mascherato** | fedeltà di immagini e grafica: si confrontano solo i pixel **fuori** dalle aree di testo (box originali + run effettivamente disegnati) | ≥ 0,98 |
+| **mappa dell'inchiostro** (4×4 riquadri) | dove c'era testo e non c'è più → `text_missing`; dove non c'era e ora c'è, e non è area di testo → `visual_drift` | — |
+
+Costo: 2 render a 72 DPI per pagina (~10-20 ms), disattivabile con `PDFBOOK_VISUAL_QA=0`.
+`visual_drift` è **informativa**, non bloccante: diventerà bloccante dopo la Fase 1, quando
+esisteranno baseline sui libri reali.
+
 ## Formato prodotto
 
 ```json

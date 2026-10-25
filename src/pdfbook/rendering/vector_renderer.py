@@ -40,6 +40,7 @@ class PageRenderResult:
     shifted: int = 0
     retranslated: int = 0
     not_drawn: int = 0
+    runs: list = field(default_factory=list)
 
     def merge(self, block: BlockResult) -> None:
         self.issues.extend(block.issues)
@@ -97,6 +98,7 @@ class VectorRenderer:
             painted = painter.paint(block, page, translations, shift)
             result.blocks += 1
             result.merge(painted)
+            result.runs.extend(painted.runs)
             collected.extend(painted.runs)
             self._draw(canvas, page, painted.runs, result)
             placed.append((block.bbox, painted.y_end))

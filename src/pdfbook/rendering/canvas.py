@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
 
 from pdfbook.domain.models import Rect
+from pdfbook.qa.checks_visual import PageImage
 
 RGB = tuple[float, float, float]
 
@@ -49,4 +50,8 @@ class PageCanvas(Protocol):
 
     def text(self) -> str:
         """Testo effettivamente presente nella pagina (per il controllo dei glifi)."""
+        ...
+
+    def snapshot(self, dpi: float = 72.0) -> PageImage:
+        """Immagine in scala di grigi della pagina, per il confronto visivo."""
         ...

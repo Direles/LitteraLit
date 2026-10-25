@@ -16,7 +16,9 @@ from pdfbook.config.settings import AppSettings
 from pdfbook.domain.models import PageLayout, QAReport
 from pdfbook.layout.hyphenation import Hyphenation
 from pdfbook.layout.segmentation import is_structured_block
+from pdfbook.qa.checks_geometry import run_box
 from pdfbook.qa.checks_glyphs import check_page_glyphs
+from pdfbook.qa.checks_visual import check_page_visual
 from pdfbook.qa.report import gate, write_report
 from pdfbook.rendering.vector_renderer import PageRenderResult, VectorRenderer
 from pdfbook.translation.pipeline import TranslationOutcome, TranslationPipeline
@@ -99,8 +101,11 @@ class TranslationJob:
                 page = self.runtime.source.page(index)
                 translations = self._translate(translator, page, previous)
                 canvas = self.runtime.canvas_factory(index)
+                before = self._snapshot(canvas)
                 rendered = renderer.render_page(canvas, page, translations)
                 self._merge(report, rendered, counters)
+                if before is not None:
+                    self._check_visual(report, page, before, rendered, canvas)
                 for issue in check_page_glyphs(
                     page.number, list(translations.values()), canvas.text()
                 ):
@@ -181,6 +186,21 @@ class TranslationJob:
     @staticmethod
     def _page_text(page: PageLayout) -> str:
         return "\n".join(block.text for block in page.text_blocks())[:_CONTEXT_CHARS]
+
+    def _snapshot(self, canvas) -> object | None:
+        """Immagine della pagina **prima** della redazione, se il QA visivo è attivo."""
+        if not self.spec.settings.visual_qa:
+            return None
+        return canvas.snapshot(self.spec.settings.visual_qa_dpi)
+
+    def _check_visual(self, report: QAReport, page: PageLayout, before, rendered, canvas) -> None:
+        after = canvas.snapshot(self.spec.settings.visual_qa_dpi)
+        masked = [block.bbox for block in page.blocks]
+        masked.extend(run_box(run) for run in rendered.runs)
+        for issue in check_page_visual(
+            page.number, before, after, text_boxes=masked
+        ):
+            report.add(issue)
 
     def _save(self) -> str:
         self.runtime.cache.save()

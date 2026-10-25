@@ -54,6 +54,8 @@ class AppSettings:
     log_level: str = "INFO"
     ocr_url: str = ""
     api_key: str = field(default="", repr=False)
+    visual_qa: bool = True
+    visual_qa_dpi: float = 72.0
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -90,6 +92,8 @@ class AppSettings:
             "cache_path": str(self.cache_path),
             "log_level": self.log_level,
             "ocr_url": self.ocr_url,
+            "visual_qa": self.visual_qa,
+            "visual_qa_dpi": self.visual_qa_dpi,
             "has_api_key": bool(self.api_key),
         }
 
@@ -138,4 +142,18 @@ def load_settings(
         log_level=(source.get("PDFBOOK_LOG_LEVEL", "INFO").strip() or "INFO").upper(),
         ocr_url=source.get("PDFBOOK_OCR_URL", "").strip(),
         api_key=source.get("PDFBOOK_API_KEY", ""),
+        visual_qa=_as_bool(source.get("PDFBOOK_VISUAL_QA", "1")),
+        visual_qa_dpi=_as_float(source.get("PDFBOOK_VISUAL_QA_DPI", "72"), 72.0),
     )
+
+
+def _as_bool(raw: str | None) -> bool:
+    return str(raw or "1").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _as_float(raw: str | None, default: float) -> float:
+    try:
+        value = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default

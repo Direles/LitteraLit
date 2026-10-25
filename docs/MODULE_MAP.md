@@ -112,6 +112,8 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/cli.py` | cli | Entrypoint argparse: `translate`, `doctor` | 160 | **esistente (M11)** | `tests/unit/test_cli.py` |
 | `src/pdfbook/ocr/client.py` | ocr | Client sidecar VLM per QA/scansioni | 120 | opzionale (§14) | `test_ocr_client.py` |
 | `tools/modularity_check.py` | tool | Enforcement R1/R2/R3/R5/R8/R11/R12/R13 | 300 | **esistente** | — (eseguito in CI) |
+| `tools/launch.py` | tool | Avvio guidato: venv, installazione, GUI/CLI per Windows/macOS/Linux | 140 | **esistente** | `tests/unit/test_launch_tool.py` |
+| `tests/integration/` | test | Pipeline end-to-end su PDF sintetici generati al volo (nessun binario nel repo) | — | **esistente (Fase 0)** | eseguiti in CI |
 
 Aggiornare questa tabella è obbligatorio in ogni commit che aggiunge o sposta un modulo (R10).
 

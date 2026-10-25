@@ -18,6 +18,7 @@ from collections.abc import Sequence
 import pymupdf as fitz
 
 from pdfbook.domain.models import Rect
+from pdfbook.qa.checks_visual import PageImage
 
 from .canvas import TextRun
 
@@ -68,6 +69,19 @@ class FitzCanvas:
     def text(self) -> str:
         """Testo estratto dalla pagina dopo il disegno (usato dal QA sui glifi)."""
         return self.page.get_text()
+
+    def snapshot(self, dpi: float = 72.0) -> PageImage:
+        """Pagina in scala di grigi, per il confronto visivo prima/dopo."""
+        # PyMuPDF richiede un intero: arrotondiamo il DPI configurato (float).
+        resolution = max(int(round(dpi)), 1)
+        pix = self.page.get_pixmap(colorspace=fitz.csGRAY, dpi=resolution, alpha=False)
+        return PageImage(
+            pixels=bytes(pix.samples),
+            width=pix.width,
+            height=pix.height,
+            pt_width=self.width,
+            stride=pix.stride,
+        )
 
 
 def _by_color(runs: Sequence[TextRun]) -> dict[tuple[float, float, float], list[TextRun]]:
