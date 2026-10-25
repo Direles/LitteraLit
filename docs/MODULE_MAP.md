@@ -9,7 +9,7 @@
 ## 1. Routing rapido — "se devi… → apri…"
 
 La colonna *Provenienza* indica da quale file della Gen 2 è stato migrato il modulo: quei file
-sono stati archiviati fuori dal progetto dopo M11 e **non vanno cercati nel repository**.
+sono stati rimossi dopo M11 e **non vanno cercati nel repository**.
 
 | Se devi… | Apri (target) | Provenienza (app Gen 2) | NON toccare |
 |---|---|---|---|

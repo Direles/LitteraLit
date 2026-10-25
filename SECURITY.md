@@ -4,12 +4,12 @@
 
 - Nessuna chiave API, token o password nel repository (codice, JSON, documentazione, test, log).
 - La configurazione locale usa variabili d'ambiente o il keyring di sistema; `.env.example` documenta **solo i nomi**.
-- La configurazione dell'app precedente (`config.json`) è archiviata **fuori dal progetto** (`Documents/LitteraLit-archivio/app-gen2/dati/`): contiene ancora chiavi reali in chiaro. Va ruotata e il file eliminato.
+- La configurazione dell'app precedente (con le chiavi) **non è più presente** né nel progetto né su disco: è stata eliminata. Resta però valida l'azione di rotazione se le chiavi sono state usate prima della cancellazione.
 - Nessuna chiave in URL (`?key=...`): finisce in log, proxy e cronologia. Usare gli header dedicati.
 
 ## Azione richiesta subito (rotazione)
 
-Il file `config.json` dell'app precedente, archiviato in `Documents/LitteraLit-archivio/app-gen2/dati/`, contiene chiavi **Anthropic** e **DeepSeek** in chiaro. Prima di qualunque pubblicazione:
+L'app precedente conservava le chiavi **Anthropic** e **DeepSeek** in chiaro in un file `config.json`, poi eliminato insieme ai dati editoriali. Se quelle chiavi sono state usate, vanno comunque ruotate: la cancellazione del file non le invalida. Procedura:
 
 1. revocare entrambe le chiavi dal pannello del provider;
 2. emetterne di nuove e inserirle solo in `.env` locale o nel keyring;
@@ -30,7 +30,7 @@ Aprire una issue privata al maintainer (o un security advisory su GitHub) per vu
 
 | Rischio | Dove | Stato |
 |---|---|---|
-| Chiavi API in chiaro su disco | archivio locale `app-gen2/dati/config.json` | da ruotare e rimuovere |
+| Chiavi API in chiaro su disco | file eliminato (ex `config.json` app precedente) | **ruotare comunque** le chiavi usate |
 | Chiave Gemini in query string | `translator.py:159,472` | da sostituire con header |
 | Messaggi d'errore con body dell'API | `translator.py` (`RuntimeError`) | da filtrare |
 | Esecuzione di codice di terze parti (`trust_remote_code` del modello OCR) | sidecar opzionale | solo in container isolato |

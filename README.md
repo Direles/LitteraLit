@@ -5,7 +5,7 @@ Traduce libri tecnici in PDF **conservando il layout**: redazione vettoriale del
 > **Stato**: migrazione **completata** (M1–M11) e codice pubblicato. Il progetto vive in
 > `src/pdfbook/` (moduli con budget dimensionali e test) e in `docs/`; `legacy/` conserva il
 > codice Gen 1 congelato. **Dati editoriali e app precedente non fanno parte del progetto**:
-> sono stati archiviati fuori dal repository (vedi `SECURITY.md`).
+> sono stati rimossi e non sono conservati nel repository.
 
 ## Cosa fa
 
@@ -75,7 +75,7 @@ py -m ruff check src tests tools      # lint
 
 ## Sicurezza e dati
 
-- Nessuna chiave nel repository: vedi [`SECURITY.md`](SECURITY.md). **Ruota le chiavi** se hai usato l'app precedente (la sua configurazione è archiviata fuori dal progetto).
+- Nessuna chiave nel repository: vedi [`SECURITY.md`](SECURITY.md). **Ruota le chiavi** se hai usato l'app precedente.
 - PDF, traduzioni e QA report sono **opere protette**: esclusi da git, uso strettamente personale.
 
 ## Licenza

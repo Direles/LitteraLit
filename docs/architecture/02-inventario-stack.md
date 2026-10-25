@@ -13,11 +13,11 @@
 > (due generazioni di pipeline). Dopo la migrazione il progetto pubblicato contiene solo
 > `src/pdfbook/`, `docs/`, `tests/`, `tools/`, `legacy/` e i file di progetto (≈0,5 MB):
 > i dati editoriali (PDF, traduzioni, cache, render di test) e l'app Gen 2 sono stati
-> archiviati **fuori dal repository**. Le voci sotto sono conservate come documentazione storica.
+> **rimossi dal progetto** e non sono conservati. Le voci sotto restano come documentazione storica.
 
 ```
 traduzione libri/
-├── conversione gemini/           ← app Gen 2, congelata (archiviata fuori dal progetto)
+├── conversione gemini/           ← app Gen 2, congelata (rimossa dopo la migrazione)
 │   ├── app_gui.py                GUI CustomTkinter (entrypoint storico)
 │   ├── translator.py             adapter multi-provider LLM + cache + parsing robusto
 │   ├── rebuild_vector.py         motore di ricostruzione PDF vettoriale
