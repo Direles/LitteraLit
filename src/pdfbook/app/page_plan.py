@@ -15,7 +15,7 @@ from pdfbook.domain.models import PageLayout, TextBlock
 from pdfbook.layout.flow import Continuation, detect_continuations, merged_text
 from pdfbook.layout.page_furniture import detect_furniture
 from pdfbook.layout.segmentation import is_structured_block
-from pdfbook.layout.styles import block_has_emphasis, tag_block_text
+from pdfbook.layout.styles import block_needs_tags, tag_block_text
 
 __all__ = ["PagePlan", "UnitTarget", "block_units", "build_plans"]
 
@@ -54,7 +54,7 @@ def block_units(page: PageLayout, *, inline_styles: bool = False) -> dict[str, s
             for index, line in enumerate(block.lines):
                 if line.text.strip():
                     units[f"{block.id}_l{index}"] = line.text
-        elif inline_styles and block_has_emphasis(block):
+        elif inline_styles and block_needs_tags(block):
             units[block.id] = tag_block_text(block)
         else:
             units[block.id] = text

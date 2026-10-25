@@ -88,6 +88,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/layout/hyphenation.py` | layout | Sillabazione per lingua (pyphen, degrado dichiarato) | 90 | **esistente (M6)** | `tests/unit/test_hyphenation.py` |
 | `src/pdfbook/layout/toc.py` | layout | Riconoscimento e riallineamento delle righe d'indice | 70 | **esistente (M6)** | `tests/unit/test_toc.py` |
 | `src/pdfbook/layout/flow.py` | layout | Paragraph stitching fra pagine + ridistribuzione della traduzione | 200 | **esistente (Fase 2)** | `tests/unit/test_flow.py` |
+| `src/pdfbook/layout/scripts.py` | layout | Riconoscimento apici/pedici da corpo e baseline, scala e spostamento | 90 | **esistente (Fase 1.3)** | `tests/unit/test_styles.py` |
 | `src/pdfbook/layout/page_furniture.py` | layout | Header, footer e numeri di pagina: riconoscimento per ricorrenza | 110 | **esistente (Fase 2.4)** | `tests/unit/test_page_furniture.py` |
 | `src/pdfbook/app/page_plan.py` | app | Unità di traduzione per pagina e destinazioni (con stitching) | 110 | **esistente (Fase 2)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/layout/tables.py` | layout | Riconoscimento tabelle dalla geometria e marcatura delle celle | 140 | **esistente (Fase 2.3)** | `tests/unit/test_tables.py` |

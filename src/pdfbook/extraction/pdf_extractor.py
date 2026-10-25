@@ -35,7 +35,18 @@ def span_from_raw(raw: Mapping[str, Any]) -> Span:
         font_name=str(raw.get("font", "")),
         size=float(raw.get("size", 0.0) or 0.0),
         color=int(raw.get("color", 0) or 0),
+        origin_y=_span_origin(raw),
     )
+
+
+def _span_origin(raw: Mapping[str, Any]) -> float | None:
+    origin = raw.get("origin")
+    if isinstance(origin, Sequence) and len(origin) >= 2:
+        try:
+            return float(origin[1])
+        except (TypeError, ValueError):
+            return None
+    return None
 
 
 def line_from_raw(raw: Mapping[str, Any]) -> Line | None:

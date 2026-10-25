@@ -181,6 +181,24 @@ class StyleTest(unittest.TestCase):
         )
         self.assertIn(IssueKind.STYLE_FLATTENED, [issue.kind for issue in result.issues])
 
+    def test_superscript_is_drawn_smaller_and_higher(self):
+        from pdfbook.domain.models import Line, Span, TextBlock
+
+        spans = [
+            Span(text="nota", font_name="MinionPro-Regular", size=10.0, origin_y=110),
+            Span(text="12", font_name="MinionPro-Regular", size=6.5, origin_y=107),
+        ]
+        line = Line(spans=spans, bbox=Rect(0, 100, 200, 112), origin_y=110)
+        block = TextBlock(id="b0", bbox=Rect(0, 100, 200, 112), lines=[line])
+        canvas = FakeCanvas()
+        VectorRenderer(FakeResolver()).render_page(
+            canvas, make_page(block), {"b0": "nota<sup>12</sup>"}
+        )
+        note_run = [run for run in canvas.runs if run.text == "12"][0]
+        body_run = [run for run in canvas.runs if run.text == "nota"][0]
+        self.assertLess(note_run.size, body_run.size)
+        self.assertLess(note_run.baseline_y, body_run.baseline_y)
+
 
 class LayoutTest(unittest.TestCase):
     def test_centered_block_is_drawn_centered(self):

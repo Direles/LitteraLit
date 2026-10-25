@@ -117,12 +117,17 @@ class Rect:
 
 @dataclass(frozen=True)
 class Span:
-    """Porzione di riga con font/dimensione/colore omogenei."""
+    """Porzione di riga con font/dimensione/colore omogenei.
+
+    ``origin_y`` è la baseline dello span (``None`` = sconosciuta: si usa quella della riga).
+    Serve a riconoscere apici e pedici, che hanno baseline spostata rispetto alla riga.
+    """
 
     text: str
     font_name: str = ""
     size: float = 0.0
     color: int = 0  # intero RGB come lo restituisce PyMuPDF
+    origin_y: float | None = None
 
     def is_blank(self) -> bool:
         return not self.text.strip()

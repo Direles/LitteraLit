@@ -13,7 +13,8 @@
 | `toc.py` | Riconosce le righe d'indice e ricalcola i puntini di riempimento | Non conosce il resto della pagina |
 | `segmentation.py` | Righe visive (colonne affiancate), indici, classificazione del blocco | Non disegna e non decide il corpo |
 | `aligner.py` | Allineamento `left`/`center`/`right` di righe e blocchi | Non sposta il testo: restituisce solo etichette |
-| `styles.py` | Grassetto/corsivo inline: tag `<b>`/`<i>`, parsing e a capo con metriche miste | Non disegna e non conosce i font concreti |
+| `styles.py` | Grassetto/corsivo/apici inline: tag, parsing e a capo con metriche miste | Non disegna e non conosce i font concreti |
+| `scripts.py` | Riconosce apici e pedici da corpo e baseline; scala e spostamento | Non disegna e non modifica i blocchi |
 
 ## Stili inline (Fase 1.1/1.2)
 
@@ -30,6 +31,16 @@ corsivi sparivano. La soluzione è un round-trip con **marcatori**, non una stru
 **Politica di fallback**: se i tag tornano assenti o sbilanciati non si inventa nulla — tutto il
 blocco va nel font dominante e si registra `style_flattened` (informativa). Un tag aperto e mai
 chiuso non manda in errore il parsing: lo stato resta attivo fino a fine testo.
+
+## Apici e pedici (Fase 1.3)
+
+Un riferimento di nota è uno span più piccolo del corpo dominante della riga con la baseline
+spostata: `scripts.script_of(span, line)` lo classifica come `sup` (baseline sopra) o `sub` (sotto),
+usando `dominant_size` (pesato sui caratteri, non sugli span) e `RISE_RATIO = 0.10`.
+
+Nel round-trip diventano `<sup>…</sup>` / `<sub>…</sub>`; in rendering il corpo è `SCRIPT_SCALE =
+0.68` e la baseline si sposta di `-0.33 × corpo` (apice) o `+0.16 × corpo` (pedice). Così il
+riferimento resta attaccato alla parola senza declassare il blocco a "corpo ridotto".
 
 ## Paragraph stitching (Fase 2)
 

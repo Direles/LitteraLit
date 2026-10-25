@@ -21,7 +21,7 @@ from pdfbook.layout.fitter import (
 )
 from pdfbook.layout.hyphenation import Hyphenation
 from pdfbook.layout.styles import (
-    block_has_emphasis,
+    block_needs_tags,
     has_markers,
 )
 
@@ -93,13 +93,13 @@ class BlockPainter:
         if self.inline_styles and has_markers(text):
             self._paint_styled(block, page, text, shift, result)
             return result
-        if block_has_emphasis(block):
+        if block_needs_tags(block):
             result.issues.append(
                 QAIssue(
                     page=page.number,
                     kind=IssueKind.STYLE_FLATTENED,
                     block=block.id,
-                    detail="grassetto/corsivo non conservati: reso nel font dominante",
+                    detail="grassetto/corsivo/apici non conservati: reso nel font dominante",
                 )
             )
         fit, text, shortened = self._fit_block(text, block, page, bounds, target, cell=cell)

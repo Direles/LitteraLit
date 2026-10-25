@@ -73,8 +73,11 @@ class WrapTest(unittest.TestCase):
     def make_measure(self):
         widths = {(False, False): 1.0, (True, False): 2.0, (False, True): 1.5, (True, True): 2.0}
 
-        def measure(text, bold, italic, size):
-            return len(text) * size * widths[(bold, italic)]
+        from pdfbook.layout.styles import piece_size
+
+        def measure(piece, size):
+            base = size * widths[(piece.bold, piece.italic)]
+            return len(piece.text) * base * (piece_size(piece, size) / size if size else 1.0)
 
         return measure
 
@@ -105,6 +108,57 @@ class WrapTest(unittest.TestCase):
             max_width=5.0,
         )
         self.assertEqual(len(lines), 1)
+
+
+class ScriptTest(unittest.TestCase):
+    def block_with_superscript(self):
+        from pdfbook.domain.models import Line, Span, TextBlock
+
+        spans = [
+            Span(text="nota", font_name="MinionPro-Regular", size=10.0, origin_y=110),
+            Span(text="12", font_name="MinionPro-Regular", size=6.5, origin_y=107),
+        ]
+        line = Line(spans=spans, bbox=Rect(0, 100, 200, 112), origin_y=110)
+        return TextBlock(id="b0", bbox=Rect(0, 100, 200, 112), lines=[line])
+
+    def test_detects_superscript(self):
+        from pdfbook.layout.scripts import dominant_size, script_of
+
+        line = self.block_with_superscript().lines[0]
+        self.assertAlmostEqual(dominant_size(line), 10.0)
+        self.assertEqual(script_of(line.spans[1], line), "sup")
+
+    def test_normal_span_is_not_a_script(self):
+        from pdfbook.layout.scripts import script_of
+
+        line = self.block_with_superscript().lines[0]
+        self.assertIsNone(script_of(line.spans[0], line))
+
+    def test_block_needs_tags_when_it_has_scripts(self):
+        from pdfbook.layout.styles import block_needs_tags
+
+        self.assertTrue(block_needs_tags(self.block_with_superscript()))
+
+    def test_tags_wrap_the_note_reference(self):
+        from pdfbook.layout.styles import tag_block_text
+
+        self.assertIn("<sup>12</sup>", tag_block_text(self.block_with_superscript()))
+
+    def test_parse_sup_and_sub(self):
+        from pdfbook.layout.styles import parse_tagged
+
+        pieces = parse_tagged("testo<sup>3</sup> e<sub>2</sub>")
+        scripts = {piece.text: piece.script for piece in pieces}
+        self.assertEqual(scripts["3"], "sup")
+        self.assertEqual(scripts["2"], "sub")
+
+    def test_script_size_and_baseline(self):
+        from pdfbook.layout.scripts import script_baseline_offset, script_scale
+
+        self.assertLess(script_scale("sup"), 1.0)
+        self.assertLess(script_baseline_offset("sup", 10.0), 0.0)
+        self.assertGreater(script_baseline_offset("sub", 10.0), 0.0)
+        self.assertEqual(script_baseline_offset(None, 10.0), 0.0)
 
 
 if __name__ == "__main__":
