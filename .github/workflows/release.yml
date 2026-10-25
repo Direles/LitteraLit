@@ -1,0 +1,74 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag della release (es. v0.1.0)"
+        required: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Dipendenze
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[gui]" pyinstaller
+      - name: Costruisci CLI e GUI (onedir)
+        shell: bash
+        run: |
+          python -m PyInstaller --noconfirm --clean --name pdfbook --onedir \
+            --collect-all pymupdf --paths src src/pdfbook/cli.py
+          python -m PyInstaller --noconfirm --clean --windowed --name pdfbook-gui --onedir \
+            --collect-all customtkinter --collect-all pymupdf --paths src src/pdfbook/gui/app.py
+      - name: Pacchetto (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/pdfbook, dist/pdfbook-gui -DestinationPath "LitteraLit-${{ matrix.os }}.zip"
+      - name: Pacchetto (macOS/Linux)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          tar -czf "LitteraLit-${RUNNER_OS}.tar.gz" -C dist pdfbook pdfbook-gui
+      - name: Verifica che il binario parta
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then ./dist/pdfbook/pdfbook.exe --version; else ./dist/pdfbook/pdfbook --version; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LitteraLit-${{ matrix.os }}
+          path: |
+            LitteraLit-*.zip
+            LitteraLit-*.tar.gz
+          retention-days: 14
+      - name: Allega alla release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            LitteraLit-*.zip
+            LitteraLit-*.tar.gz
+          generate_release_notes: true
+          body: |
+            Build automatica da tag. I binari **non sono firmati**: Windows mostrerà
+            SmartScreen e macOS chiederà di autorizzare l'app (tasto destro → Apri).
+
+            Il programma incorpora PyMuPDF (AGPL-3.0): la distribuzione è sotto AGPL-3.0.
+            Sorgente corrispondente: questo repository, allo stesso tag.

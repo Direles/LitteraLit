@@ -145,7 +145,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 |---|---|---|
 | 6.1 | GUI: anteprima prima/dopo con diff, ispettore issue per pagina, resume, drag & drop, ETA, annulla | oggi la GUI è funzionale ma "cieca" sull'output | **parziale**: presenter (ETA, digest issue, riepilogo, coppie per l'anteprima), report HTML a fine run, **annulla cooperativo** (pulsante GUI + `Cancelled`/exit 130); drag & drop e anteprima a schermo restano da fare |
 | 6.2 | CLI: `pdfbook qa`, `report --html`, `batch` su più file | | **parziale**: `pdfbook qa` e `pdfbook report` (HTML statico); `batch` ancora da fare |
-| 6.3 | Packaging multi-OS in CI (PyInstaller matrix), release firmate Windows, AppImage Linux | oggi c'è solo il lanciatore | **parziale**: job `package` in CI (sdist+wheel, `twine check`, install in ambiente pulito); PyInstaller e release firmate restano da fare |
+| 6.3 | Packaging multi-OS in CI (PyInstaller matrix), release firmate Windows, AppImage Linux | oggi c'è solo il lanciatore | **parziale**: job `package` (wheel/sdist verificati) e `release.yml` (PyInstaller onedir su Windows/macOS/Linux, artefatti + release da tag, verificato in locale); firme, notarizzazione e AppImage restano da fare |
 | 6.4 | Guida utente con screenshot, troubleshooting, FAQ, video breve | docs/ | **parziale**: `docs/GUIDA.md` (installazione, primo libro, report, problemi frequenti); screenshot e video ancora da fare |
 | 6.5 | **Decisione licenza**: sostituire PyMuPDF (pypdfium2 + pdfminer/pdfplumber + pikepdf + ReportLab) oppure accettare AGPL | blocca la distribuzione commerciale | **deciso (A)**: si resta su PyMuPDF con AGPL-3.0 per le distribuzioni; `THIRD_PARTY.md` + [`13-licenza.md`](architecture/13-licenza.md) |
 
