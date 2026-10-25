@@ -1,0 +1,12 @@
+# Normalizzazione fine a capo: LF nel repository, CRLF solo per i lanciatori Windows.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf
+*.ps1 text eol=crlf
+
+# Binari
+*.pdf binary
+*.png binary
+*.exe binary
