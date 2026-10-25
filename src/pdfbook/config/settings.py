@@ -61,6 +61,7 @@ class AppSettings:
     workers: int = 1
     rate_limit: float = 0.0
     max_cost: float = 0.0
+    inline_styles: bool = True
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -104,6 +105,7 @@ class AppSettings:
             "workers": self.workers,
             "rate_limit": self.rate_limit,
             "max_cost": self.max_cost,
+            "inline_styles": self.inline_styles,
             "has_api_key": bool(self.api_key),
         }
 
@@ -159,6 +161,7 @@ def load_settings(
         workers=int(_as_float(source.get("PDFBOOK_WORKERS", "1"), 1.0)),
         rate_limit=_as_float(source.get("PDFBOOK_RATE_LIMIT", "0"), 0.0),
         max_cost=_as_float(source.get("PDFBOOK_MAX_COST", "0"), 0.0),
+        inline_styles=_as_bool(source.get("PDFBOOK_INLINE_STYLES", "1")),
     )
 
 

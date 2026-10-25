@@ -40,7 +40,8 @@ _BASE_RULES = (
     "represent consecutive paragraphs of a book page.\n"
     "4. Return ONLY the translated JSON object containing the exact same keys. Do not explain, do "
     "not add markdown wrapping, do not add comments. Keep bullet characters (like '■') intact. "
-    "Preserve formatting details like multiple consecutive spaces or tabs where possible."
+    "Preserve formatting details like multiple consecutive spaces or tabs where possible. "
+    "If the text contains tags such as <b> or <i>, keep them exactly around their translated content."
 )
 
 _GLOSSARY_RULE = "\n5. MANDATORY GLOSSARY: the following terms must remain EXACTLY as-is, untranslated: {terms}."

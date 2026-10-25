@@ -1,9 +1,8 @@
 """Painter dei blocchi di prosa (M9).
 
-Un blocco di prosa: una traduzione, un'area, un corpo target. Il painter sceglie il corpo
-(``layout.fitter``), eventualmente chiede una versione più corta (``ShortenerPort``),
-calcola le baseline e produce righe + issue. Non tocca il canvas: il disegno è del
-renderer, così il painter è testabile senza PDF.
+Un blocco: una traduzione, un'area, un corpo target. Il painter sceglie il corpo
+(``layout.fitter``), chiede eventualmente una versione più corta (``ShortenerPort``),
+calcola le baseline e produce righe + issue. Non tocca il canvas.
 """
 
 from __future__ import annotations
@@ -13,12 +12,22 @@ from dataclasses import dataclass, field
 
 from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, Rect, TextBlock
 from pdfbook.domain.ports import FontResolverPort, ShortenerPort
+from pdfbook.fonts.platform_fonts import classify
 from pdfbook.layout.aligner import alignments_for
-from pdfbook.layout.fitter import FitResult, estimate_max_chars, fit_text
+from pdfbook.layout.fitter import (
+    FitResult,
+    estimate_max_chars,
+    fit_text,
+)
 from pdfbook.layout.hyphenation import Hyphenation
+from pdfbook.layout.styles import (
+    block_has_emphasis,
+    has_markers,
+)
 
 from .canvas import TextRun
 from .runs import baselines_for, prose_runs
+from .styled import paint_styled
 
 __all__ = ["MIN_TEXT_TO_SHORTEN", "RETRANSLATE_THRESHOLD", "BlockPainter", "BlockResult"]
 
@@ -50,9 +59,11 @@ class BlockPainter:
         missing_policy: str = "skip",
         overflow_policy: str = "keep_size",
         retranslate_threshold: float = RETRANSLATE_THRESHOLD,
+        inline_styles: bool = True,
     ) -> None:
         if missing_policy not in ("skip", "keep"):
             raise ValueError("missing_policy deve essere 'skip' o 'keep'")
+        self.inline_styles = inline_styles
         self.resolver = resolver
         self.hyphenation = hyphenation
         self.shortener = shortener
@@ -79,6 +90,18 @@ class BlockPainter:
             return result
         target = block.primary_span.size
         bounds = Rect(block.bbox.x0, block.bbox.y0 + shift, block.bbox.x1, block.bbox.y1 + shift)
+        if self.inline_styles and has_markers(text):
+            self._paint_styled(block, page, text, shift, result)
+            return result
+        if block_has_emphasis(block):
+            result.issues.append(
+                QAIssue(
+                    page=page.number,
+                    kind=IssueKind.STYLE_FLATTENED,
+                    block=block.id,
+                    detail="grassetto/corsivo non conservati: reso nel font dominante",
+                )
+            )
         fit, text, shortened = self._fit_block(text, block, page, bounds, target, cell=cell)
         self._record_fit(block, fit, target, shortened, page.number, result, cell=cell)
 
@@ -190,6 +213,44 @@ class BlockPainter:
             )
         )
         return original if self.missing_policy == "keep" else None
+
+
+
+    def _style_font_names(self, block: TextBlock) -> dict[tuple[bool, bool], str]:
+        """Nome del font originale per ogni combinazione di stile presente nel blocco."""
+        names: dict[tuple[bool, bool], str] = {(False, False): block.primary_span.font_name}
+        for line in block.lines:
+            for span in line.spans:
+                _, bold, italic = classify(span.font_name)
+                names.setdefault((bold, italic), span.font_name)
+        return names
+
+    def _styled_measure(
+        self, block: TextBlock, names: Mapping[tuple[bool, bool], str]
+    ) -> Callable[[str, bool, bool, float], float]:
+        def measure(text: str, bold: bool, italic: bool, size: float) -> float:
+            font_name = names.get((bold, italic), names[(False, False)])
+            return float(self.resolver.text_length(text, font_name, size))
+
+        return measure
+
+    def _paint_styled(
+        self,
+        block: TextBlock,
+        page: PageLayout,
+        marked_text: str,
+        shift: float,
+        result: BlockResult,
+    ) -> None:
+        paint_styled(
+            block=block,
+            page=page,
+            marked_text=marked_text,
+            shift=shift,
+            result=result,
+            resolver=self.resolver,
+            usable_width=self.usable_width,
+        )
 
     def _record_fit(
         self,

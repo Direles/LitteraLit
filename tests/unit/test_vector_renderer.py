@@ -139,6 +139,49 @@ class CellRenderTest(unittest.TestCase):
         self.assertIn(IssueKind.TABLE_MISALIGNED, [issue.kind for issue in result.issues])
 
 
+class StyleTest(unittest.TestCase):
+    def styled_block(self):
+        from pdfbook.domain.models import Line, Span, TextBlock
+
+        spans = [
+            Span(text="Testo normale ", font_name="MinionPro-Regular", size=10.0),
+            Span(text="grassetto", font_name="MinionPro-Bold", size=10.0),
+        ]
+        line = Line(spans=spans, bbox=Rect(0, 100, 260, 112), origin_y=110)
+        return TextBlock(id="b0", bbox=Rect(0, 100, 260, 112), lines=[line])
+
+    def test_tagged_translation_uses_two_fonts(self):
+        resolver = FakeResolver()
+        canvas = FakeCanvas()
+        VectorRenderer(resolver).render_page(
+            canvas, make_page(self.styled_block()), {"b0": "Testo <b>forte</b> qui"}
+        )
+        self.assertIn("MinionPro-Bold", resolver.resolved)
+        self.assertIn("MinionPro-Regular", resolver.resolved)
+        self.assertEqual([run.text for run in canvas.runs], ["Testo", "forte", "qui"])
+
+    def test_tags_never_reach_the_page(self):
+        canvas = FakeCanvas()
+        VectorRenderer(FakeResolver()).render_page(
+            canvas, make_page(self.styled_block()), {"b0": "uno <i>due</i> tre"}
+        )
+        self.assertFalse(any("<" in run.text for run in canvas.runs))
+
+    def test_missing_tags_are_reported_as_flattened(self):
+        canvas = FakeCanvas()
+        result = VectorRenderer(FakeResolver()).render_page(
+            canvas, make_page(self.styled_block()), {"b0": "testo senza tag"}
+        )
+        self.assertIn(IssueKind.STYLE_FLATTENED, [issue.kind for issue in result.issues])
+
+    def test_styles_can_be_disabled(self):
+        canvas = FakeCanvas()
+        result = VectorRenderer(FakeResolver(), inline_styles=False).render_page(
+            canvas, make_page(self.styled_block()), {"b0": "testo <b>con</b> tag"}
+        )
+        self.assertIn(IssueKind.STYLE_FLATTENED, [issue.kind for issue in result.issues])
+
+
 class LayoutTest(unittest.TestCase):
     def test_centered_block_is_drawn_centered(self):
         block = make_block("b0", [make_line("Titolo", x0=250, width=100)], bbox=Rect(250, 100, 350, 112))

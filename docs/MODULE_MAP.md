@@ -91,6 +91,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/layout/page_furniture.py` | layout | Header, footer e numeri di pagina: riconoscimento per ricorrenza | 110 | **esistente (Fase 2.4)** | `tests/unit/test_page_furniture.py` |
 | `src/pdfbook/app/page_plan.py` | app | Unità di traduzione per pagina e destinazioni (con stitching) | 110 | **esistente (Fase 2)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/layout/tables.py` | layout | Riconoscimento tabelle dalla geometria e marcatura delle celle | 140 | **esistente (Fase 2.3)** | `tests/unit/test_tables.py` |
+| `src/pdfbook/layout/styles.py` | layout | Tag `<b>`/`<i>` per gli stili inline e a capo con metriche miste | 140 | **esistente (Fase 1.1/1.2)** | `tests/unit/test_styles.py` |
 | `src/pdfbook/qa/checks_visual.py` | qa | SSIM/pixel-diff originale↔output | 150 | pianificato (Fase 0) | `tests/unit/test_checks_visual.py` |
 | `src/pdfbook/ocr/vlm_adapter.py` | ocr | Sidecar OCR/VLM dietro `DocumentSource` | 150 | opzionale (Fase 4) | `tests/unit/test_ocr_adapter.py` |
 | `src/pdfbook/layout/aligner.py` | layout | Allineamento riga/blocco con soglie esplicite | 110 | **esistente (M7)** | `tests/unit/test_aligner.py` |
@@ -114,6 +115,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/rendering/structured_painter.py` | rendering | Blocchi strutturati: colonne con la propria x | 110 | **esistente (M9)** | `tests/unit/test_vector_renderer.py` |
 | `src/pdfbook/rendering/vector_renderer.py` | rendering | Orchestrazione di pagina: redazione, painter, shift, draw | 140 | **esistente (M9)** | `tests/unit/test_vector_renderer.py` |
 | `src/pdfbook/rendering/fitz_canvas.py` | rendering | Unico punto con `fitz`: redaction + `TextWriter` per colore | 90 | **esistente (M9)** | smoke test |
+| `src/pdfbook/rendering/styled.py` | rendering | Disegno con stili inline: a capo e run per parola | 160 | **esistente (Fase 1.2)** | `tests/unit/test_styles.py` |
 | `src/pdfbook/qa/report.py` | qa | Formato compatibile, scrittura atomica, `gate()` | 150 | **esistente (M10)** | `tests/unit/test_qa_report.py` |
 | `src/pdfbook/qa/checks_glyphs.py` | qa | Glyph-diff atteso/reso con normalizzazione NBSP | 110 | **esistente (P0.5)** | `tests/unit/test_checks_glyphs.py` |
 | `src/pdfbook/qa/checks_glossary.py` | qa | Verifica che i termini del glossario restino invariati | 80 | **esistente (Fase 5.1)** | `tests/unit/test_checks_glossary.py` |

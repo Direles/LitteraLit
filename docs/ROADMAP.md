@@ -63,8 +63,8 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 | # | Deliverable | File | Note |
 |---|---|---|---|
-| 1.1 | Estrazione **per run tipografico** (`rawdict`/`get_texttrace`): bold, italic, colore e corpo per run, non solo per blocco | `extraction/pdf_extractor.py`, `domain/models.py` (`TextRun` semantico) | risolve §11.6 "stili inline persi" |
-| 1.2 | Rendering multi-run: una riga può avere più font/colori; corsivo e grassetto conservati | `rendering/runs.py`, `painter.py` | test con fixture mista |
+| 1.1 | Estrazione **per run tipografico** (`rawdict`/`get_texttrace`): bold, italic, colore e corpo per run, non solo per blocco | `extraction/pdf_extractor.py`, `domain/models.py` (`TextRun` semantico) | **fatto**: round-trip a marcatori (`layout/styles.py`), vedi §11.6 |
+| 1.2 | Rendering multi-run: una riga può avere più font/colori; corsivo e grassetto conservati | `rendering/runs.py`, `painter.py` | **fatto**: `rendering/styled.py`, fallback `style_flattened` |
 | 1.3 | Apici/apici di nota: shift di baseline e corpo ridotto, senza declassare il blocco | `rendering/painter.py`, `layout/fitter.py` | abilita le note |
 | 1.4 | Font bundle liberi (Inter, Source Serif, Noto Serif/Sans) + fallback deterministico, via `data/fonts/` | `fonts/platform_fonts.py` | rende stabili i golden e indipendenti dall'OS |
 | 1.5 | **ToUnicode custom** con `fontTools`: elimina NBSP/soft-hyphen nel testo estratto | `rendering/fitz_canvas.py` | chiude §11.7/1 |

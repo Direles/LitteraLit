@@ -1,7 +1,7 @@
 """Pipeline di documento (M11): PDF → pagine → traduzione → rendering → QA.
 
-Il job è l'unico punto che conosce il *flusso*: legge le pagine, costruisce il batch di
-traduzione, delega rendering e QA, salva e chiude. Non contiene né HTTP né disegno.
+Il job conosce solo il *flusso*: legge le pagine, delega traduzione, rendering e QA,
+salva e chiude. Nessun HTTP, nessun disegno.
 """
 
 from __future__ import annotations
@@ -89,9 +89,14 @@ class TranslationJob:
         """Traduce le pagine richieste, salva il PDF e il report QA."""
         first, last = self._range()
         self._offset = first
-        pages = [self.runtime.source.page(index) for index in range(first, last + 1)]
-        pages = [mark_tables(page) for page in pages]
-        plans = build_plans(pages, stitch=self.spec.settings.stitch_paragraphs)
+        pages = [
+            mark_tables(self.runtime.source.page(index)) for index in range(first, last + 1)
+        ]
+        plans = build_plans(
+            pages,
+            stitch=self.spec.settings.stitch_paragraphs,
+            inline_styles=self.spec.settings.inline_styles,
+        )
         translator = self._translator()
         renderer = self._renderer(translator)
         page_translator = PageTranslator(translator, self.spec.settings.glossary)
@@ -104,18 +109,9 @@ class TranslationJob:
         try:
             for done in range(1, total + 1):
                 previous = self._process_page(
-                    plans, done - 1, translator, page_translator, renderer,
-                    previous, report, counters,
+                    plans, done, translator, page_translator, renderer, previous,
+                    report, counters, journal, progress,
                 )
-                checkpoint(
-                    journal, done, total,
-                    self.runtime.cache, self.spec.settings.checkpoint_every,
-                )
-                if progress:
-                    progress(
-                        done, total,
-                        f"pagina {plans[done - 1].page.number}: {counters['blocks']} blocchi",
-                    )
             output, report_path = self._finalize(report, counters)
         finally:
             self.runtime.close()
@@ -153,9 +149,11 @@ class TranslationJob:
         )
 
     def _process_page(
-        self, plans, index, translator, page_translator, renderer, previous, report, counters
+        self, plans, done, translator, page_translator, renderer, previous,
+        report, counters, journal, progress,
     ) -> str:
-        """Traduzione, rendering e QA di una pagina; restituisce il testo per il contesto."""
+        """Traduzione, rendering, QA e checkpoint di una pagina."""
+        index = done - 1
         plan = plans[index]
         translations = page_translator.translate(plans, index, previous, report, counters)
         account_costs(
@@ -175,21 +173,23 @@ class TranslationJob:
             counters=counters,
             settings=self.spec.settings,
         )
+        checkpoint(
+            journal, done, len(plans),
+            self.runtime.cache, self.spec.settings.checkpoint_every,
+        )
+        if progress:
+            progress(done, len(plans), f"pagina {plan.page.number}: {counters['blocks']} blocchi")
         return self._page_text(plan.page)
 
     def _finalize(self, report: QAReport, counters: dict[str, int]) -> tuple[str, Path]:
         """Controlli finali, salvataggio del PDF e del report, pulizia del journal."""
         if counters["blocks"] == 0:
-            raise ValueError(
-                "Il PDF non contiene testo selezionabile: serve un PDF con testo nativo."
-            )
+            raise ValueError("Il PDF non contiene testo selezionabile: serve un PDF con testo nativo.")
         output = self._save()
         counters.update(self.runtime.stats())
         report_path = write_report(output, report, counters=counters)
         remove_journal(output)
         return output, report_path
-
-    # ---------- passi ----------
 
     def _range(self) -> tuple[int, int]:
         total = self.runtime.source.page_count
@@ -218,6 +218,7 @@ class TranslationJob:
             shortener=translator,
             missing_policy=self.spec.missing_policy,
             overflow_policy=self.spec.overflow_policy,
+            inline_styles=self.spec.settings.inline_styles,
         )
 
     def _translate_plan(

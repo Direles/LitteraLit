@@ -13,6 +13,23 @@
 | `toc.py` | Riconosce le righe d'indice e ricalcola i puntini di riempimento | Non conosce il resto della pagina |
 | `segmentation.py` | Righe visive (colonne affiancate), indici, classificazione del blocco | Non disegna e non decide il corpo |
 | `aligner.py` | Allineamento `left`/`center`/`right` di righe e blocchi | Non sposta il testo: restituisce solo etichette |
+| `styles.py` | Grassetto/corsivo inline: tag `<b>`/`<i>`, parsing e a capo con metriche miste | Non disegna e non conosce i font concreti |
+
+## Stili inline (Fase 1.1/1.2)
+
+Il difetto originale (§11.6): un blocco era reso con il font del **primo** span, quindi grassetti e
+corsivi sparivano. La soluzione è un round-trip con **marcatori**, non una struttura ricca:
+
+1. `tag_block_text(block)` mette `<b>…</b>` / `<i>…</i>` attorno agli span enfatizzati (per riga);
+2. il prompt chiede di conservare i tag attorno al contenuto tradotto;
+3. `parse_tagged(text)` restituisce `StyledPiece` per parola e `wrap_pieces` fa l'a capo con le
+   metriche del font di **ogni** parola;
+4. il disegno (`rendering/styled.py`) produce `TextRun` normali: il renderer non sa che esistano
+   gli stili.
+
+**Politica di fallback**: se i tag tornano assenti o sbilanciati non si inventa nulla — tutto il
+blocco va nel font dominante e si registra `style_flattened` (informativa). Un tag aperto e mai
+chiuso non manda in errore il parsing: lo stato resta attivo fino a fine testo.
 
 ## Paragraph stitching (Fase 2)
 

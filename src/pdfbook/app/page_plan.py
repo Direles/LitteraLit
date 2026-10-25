@@ -15,6 +15,7 @@ from pdfbook.domain.models import PageLayout, TextBlock
 from pdfbook.layout.flow import Continuation, detect_continuations, merged_text
 from pdfbook.layout.page_furniture import detect_furniture
 from pdfbook.layout.segmentation import is_structured_block
+from pdfbook.layout.styles import block_has_emphasis, tag_block_text
 
 __all__ = ["PagePlan", "UnitTarget", "block_units", "build_plans"]
 
@@ -39,8 +40,11 @@ class PagePlan:
     incoming: dict[str, str] = field(default_factory=dict)
 
 
-def block_units(page: PageLayout) -> dict[str, str]:
-    """Unità "naturali": ``b{i}`` per la prosa, ``b{i}_l{j}`` per le colonne."""
+def block_units(page: PageLayout, *, inline_styles: bool = False) -> dict[str, str]:
+    """Unità "naturali": ``b{i}`` per la prosa, ``b{i}_l{j}`` per le colonne.
+
+    Con ``inline_styles`` i blocchi con grassetto/corsivo portano i tag ``<b>``/``<i>``.
+    """
     units: dict[str, str] = {}
     for block in page.blocks:
         text = block.text
@@ -50,19 +54,25 @@ def block_units(page: PageLayout) -> dict[str, str]:
             for index, line in enumerate(block.lines):
                 if line.text.strip():
                     units[f"{block.id}_l{index}"] = line.text
+        elif inline_styles and block_has_emphasis(block):
+            units[block.id] = tag_block_text(block)
         else:
             units[block.id] = text
     return units
 
 
 def build_plans(
-    pages: Sequence[PageLayout], *, stitch: bool = True, furniture: bool = True
+    pages: Sequence[PageLayout],
+    *,
+    stitch: bool = True,
+    furniture: bool = True,
+    inline_styles: bool = False,
 ) -> list[PagePlan]:
-    """Costruisce un piano per pagina: unisce le continuazioni e isola header/footer."""
+    """Costruisce un piano per pagina: unisce continuazioni e isola header/footer."""
     serving = detect_furniture(pages) if furniture else set()
     plans: list[PagePlan] = []
     for index, page in enumerate(pages):
-        requests = block_units(page)
+        requests = block_units(page, inline_styles=inline_styles)
         static: dict[str, str] = {}
         for block in page.blocks:
             if (index, block.id) in serving and block.id in requests:

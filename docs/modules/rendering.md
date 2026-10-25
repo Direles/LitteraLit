@@ -13,6 +13,7 @@
 | `colors.py` | intero RGB → tupla 0..1 e `#rrggbb` | Nessuna decisione di stile |
 | `runs.py` | geometria pura: baseline, x, shift, altezze extra | Nessun fit, nessuno stato |
 | `painter.py` | blocco di prosa: fit, ritraduzione compressa, baseline, issue | Non disegna |
+| `styled.py` | blocchi con grassetto/corsivo: a capo e run parola per parola | Non decide il corpo massimo: usa il font dominante |
 | `structured_painter.py` | blocchi a colonne/indice: ogni colonna con la propria x0 | Non disegna |
 | `vector_renderer.py` | orchestrazione di pagina: classificazione, redazione, painter, shift, draw | Nessuna aritmetica tipografica |
 | `fitz_canvas.py` | unico punto con `fitz`: redaction + `TextWriter` per colore | Nessuna politica (niente fallback base-14) |
@@ -43,6 +44,7 @@ render_page(canvas, page, translations)
 | corpo ridotto | ridotto fino al 60%/6 pt | `font_reduced` |
 | corpo sceso sotto il 75% e `shortener` disponibile | richiesta versione più corta | `retranslated` |
 | `canvas.draw` non riesce a disegnare una riga | la riga viene restituita e **non** sostituita con base-14 | `text_missing` (bloccante) |
+| blocco con grassetto/corsivo ma traduzione senza tag | reso nel font dominante | `style_flattened` (informativa) |
 
 Il ripiego base-14 è stato **eliminato**: era la causa della sostituzione `—` → `·`
 (§14.3b dell'architettura). Meglio una riga mancante e segnalata che punteggiatura corrotta.

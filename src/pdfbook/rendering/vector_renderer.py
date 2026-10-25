@@ -61,6 +61,7 @@ class VectorRenderer:
         missing_policy: str = "skip",
         overflow_policy: str = "keep_size",
         retranslate_threshold: float = RETRANSLATE_THRESHOLD,
+        inline_styles: bool = True,
     ) -> None:
         shared = dict(
             hyphenation=hyphenation,
@@ -68,6 +69,7 @@ class VectorRenderer:
             missing_policy=missing_policy,
             overflow_policy=overflow_policy,
             retranslate_threshold=retranslate_threshold,
+            inline_styles=inline_styles,
         )
         self.prose = BlockPainter(resolver, **shared)
         self.structured = StructuredPainter(resolver, **shared)

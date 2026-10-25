@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pdfbook.config.settings import AppSettings
 from pdfbook.domain.models import PageLayout, QAReport
+from pdfbook.layout.styles import strip_markup
 from pdfbook.qa.checks_glyphs import check_page_glyphs
 from pdfbook.rendering.vector_renderer import VectorRenderer
 
@@ -39,5 +40,7 @@ def render_and_check(
     check_after_render(
         report, page, before, rendered, canvas, dpi=settings.visual_qa_dpi
     )
-    for issue in check_page_glyphs(page.number, list(translations.values()), canvas.text()):
+    for issue in check_page_glyphs(
+        page.number, [strip_markup(value) for value in translations.values()], canvas.text()
+    ):
         report.add(issue)

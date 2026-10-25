@@ -60,6 +60,7 @@ class IssueKind(StrEnum):
     SPLIT_FAILED = "split_failed"
     GLOSSARY_VIOLATION = "glossary_violation"
     TABLE_MISALIGNED = "table_misaligned"
+    STYLE_FLATTENED = "style_flattened"
 
 
 @dataclass(frozen=True)
