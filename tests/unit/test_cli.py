@@ -65,6 +65,26 @@ class DoctorTest(unittest.TestCase):
             self.assertIn("FAIL", output)
 
 
+class EnvFileTest(unittest.TestCase):
+    def test_dot_env_in_working_directory_is_used(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / ".env").write_text(
+                "PDFBOOK_PROVIDER=OpenAI\nPDFBOOK_MODEL=gpt-4o\nPDFBOOK_API_KEY=k\n",
+                encoding="utf-8",
+            )
+            previous = Path.cwd()
+            try:
+                os.chdir(tmp)
+                with patch.dict(os.environ, {}, clear=True), redirect_stdout(io.StringIO()) as out:
+                    code = main(["doctor"])
+            finally:
+                os.chdir(previous)
+        self.assertEqual(code, 0)
+        self.assertIn("provider: OpenAI", out.getvalue())
+        self.assertIn("model: gpt-4o", out.getvalue())
+        self.assertNotIn("k", out.getvalue().split("has_api_key")[1][:3])
+
+
 class TranslateGuardTest(unittest.TestCase):
     def test_missing_key_blocks_the_run_without_network(self):
         with (

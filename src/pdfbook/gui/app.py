@@ -36,7 +36,7 @@ class TranslatorApp(ctk.CTk):
         self.grid_columnconfigure(1, weight=2)
         self.grid_rowconfigure(0, weight=1)
 
-        self.panel = ConfigPanel(self, load_settings())
+        self.panel = ConfigPanel(self, load_settings(env_file=".env"))
         self.panel.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=10)
 
         main = ctk.CTkFrame(self)

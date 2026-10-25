@@ -16,7 +16,10 @@ from pdfbook.app import JobSpec, TranslationJob, build_runtime
 from pdfbook.config.settings import LOG_LEVELS, load_settings, parse_glossary
 from pdfbook.qa.report import gate, parse_report
 
-__all__ = ["main", "build_parser"]
+__all__ = ["main", "build_parser", "ENV_FILE"]
+
+# File di configurazione locale letto dalla working directory (mai committato).
+ENV_FILE = ".env"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -53,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _translate(args: argparse.Namespace) -> int:
-    settings = load_settings()
+    settings = load_settings(env_file=ENV_FILE)
     overrides: dict[str, object] = {}
     if args.provider:
         overrides["provider"] = args.provider
@@ -100,7 +103,7 @@ def _translate(args: argparse.Namespace) -> int:
 
 
 def _doctor(args: argparse.Namespace) -> int:
-    settings = load_settings()
+    settings = load_settings(env_file=ENV_FILE)
     print("Configurazione:")
     for key, value in settings.redacted().items():
         print(f"  {key}: {value}")
