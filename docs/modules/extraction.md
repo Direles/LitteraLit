@@ -59,11 +59,30 @@ Una pagina senza testo e con un'immagine è una scansione: `page_render` registr
 preliminare (`ocrmypdf`). Il modulo **non fa OCR**: classifica soltanto, così l'adapter della
 Fase 4.2 sa su quali pagine intervenire.
 
+## OCR (Fase 4.2)
+
+```python
+OcrConfig(language="ita+eng", jobs=0, deskew=True, rotate_pages=True, skip_text=True)
+ocrmypdf_command(input, output, config) -> list[str]
+OcrSource.open(pdf, *, config=None, runner=None, opener=PdfPageSource.open)
+looks_scanned(source, sample=6) -> bool
+```
+
+`OcrSource.open` è trasparente: se il PDF ha già testo restituisce la sorgente originale senza
+eseguire nulla. Se è una scansione (maggioranza delle pagine campionate senza testo):
+
+1. crea una **copia temporanea** in `%TEMP%/pdfbook-ocr-*`;
+2. esegue `ocrmypdf --skip-text --deskew --rotate-pages` (strato di testo invisibile);
+3. apre la copia e la usa come sorgente; `close()` cancella la cartella.
+
+Errori tradotti in `OcrError` con l'istruzione di installazione (Tesseract incluso), timeout a
+un'ora, e nessun effetto sul PDF originale. Con `PDFBOOK_OCR=off` il passo è disattivato.
+
 ## Cosa NON fa e dove andrà
 
 - **Classificazione** (prosa, titolo, indice, colonna) → `layout/segmentation.py`.
 - **Font** (quale font usare, copertura glifi) → `fonts/resolver.py`.
-- **OCR** per PDF scansionati → `ocr/` (opzionale, roadmap §14).
+- **OCR** per PDF scansionati → `ocr/` (Fase 4.2: `ocrmypdf`; Fase 4.3: VLM sidecar).
 
 ## Note per chi modifica
 

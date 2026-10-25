@@ -53,6 +53,7 @@ class AppSettings:
     cache_path: Path = DEFAULT_CACHE_PATH
     log_level: str = "INFO"
     ocr_url: str = ""
+    ocr: str = "auto"
     api_key: str = field(default="", repr=False)
     visual_qa: bool = True
     visual_qa_dpi: float = 72.0
@@ -70,6 +71,8 @@ class AppSettings:
             raise ValueError(f"lingua non supportata: {self.target_lang}")
         if self.log_level.upper() not in LOG_LEVELS:
             raise ValueError(f"livello di log non valido: {self.log_level}")
+        if self.ocr not in ("auto", "off"):
+            raise ValueError(f"modalità OCR non valida: {self.ocr} (auto|off)")
 
     def translation_settings(self) -> TranslationSettings:
         return TranslationSettings(
@@ -111,6 +114,7 @@ class AppSettings:
             "inline_styles": self.inline_styles,
             "reading_order": self.reading_order,
             "style": self.style,
+            "ocr": self.ocr,
             "has_api_key": bool(self.api_key),
         }
 
@@ -169,6 +173,7 @@ def load_settings(
         inline_styles=_as_bool(source.get("PDFBOOK_INLINE_STYLES", "1")),
         reading_order=_as_bool(source.get("PDFBOOK_READING_ORDER", "1")),
         style=source.get("PDFBOOK_STYLE", "fedele").strip() or "fedele",
+        ocr=source.get("PDFBOOK_OCR", "auto").strip().lower() or "auto",
     )
 
 

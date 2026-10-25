@@ -43,12 +43,13 @@ STDOUT_HACK_RE = re.compile(r"sys\.stdout\s*=\s*io\.TextIOWrapper")
 PRINT_ALLOWED_PREFIXES = ("tools/", "src/pdfbook/gui/", "src/pdfbook/cli.py")
 
 _ALL_DOMAIN = {"domain", "config", "qa", "extraction", "fonts", "layout",
-               "translation", "rendering"}
+               "translation", "rendering", "ocr"}
 LAYER_ALLOWED = {
     "domain": set(),
     "config": {"domain"},
     "qa": {"domain", "config"},
     "extraction": {"domain"},
+    "ocr": {"domain", "extraction"},
     "fonts": {"domain"},
     "layout": {"domain", "fonts"},
     "translation": {"domain", "config"},

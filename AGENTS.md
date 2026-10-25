@@ -39,7 +39,7 @@ I budget non sono consigli: sono la condizione che rende possibile il routing di
 | Zona | Contenuto ammesso |
 |---|---|
 | radice | solo `README.md`, `AGENTS.md`, `SECURITY.md`, `LICENSE`, `ARCHITETTURA.md`, `pyproject.toml`, `.gitignore`, `.env.example`, i lanciatori `start.cmd`/`start.command`/`start.sh`, stub di reindirizzamento |
-| `src/pdfbook/**` | codice di produzione, organizzato per layer (`domain/`, `extraction/`, `layout/`, `fonts/`, `translation/`, `rendering/`, `qa/`, `gui/`, `config/`) |
+| `src/pdfbook/**` | codice di produzione, organizzato per layer (`domain/`, `extraction/`, `ocr/`, `layout/`, `fonts/`, `translation/`, `rendering/`, `qa/`, `gui/`, `config/`) |
 | `tools/**` | script di sviluppo e verifica (solo stdlib o dipendenze dev) |
 | `tests/**` | test, speculari a `src/pdfbook/**` |
 | `docs/**` | documentazione modulare (vedi R8) |
@@ -64,6 +64,7 @@ Se il file da modificare supera i budget di R1: **prima** lo si splitta con un c
 | `domain` | solo stdlib |
 | `config`, `qa` | `domain` |
 | `extraction`, `fonts`, `layout`, `translation` | `domain` |
+| `ocr` | `domain`, `extraction` |
 | `rendering` | `domain`, `fonts`, `layout` |
 | `app` | `domain`, `config`, `qa`, `extraction`, `fonts`, `layout`, `translation`, `rendering` |
 | `gui`, `cli` | tutto `src/pdfbook` |

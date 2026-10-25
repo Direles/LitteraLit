@@ -19,6 +19,7 @@ from pdfbook.extraction.fitz_source import PdfPageSource
 from pdfbook.fonts.bundled import BundledFonts
 from pdfbook.fonts.fitz_adapter import PdfFontSource, make_fitz_font
 from pdfbook.fonts.resolver import FontResolver
+from pdfbook.ocr import OcrSource
 from pdfbook.rendering.fitz_canvas import FitzCanvas
 from pdfbook.translation.cache import TranslationCache
 from pdfbook.translation.providers.registry import create_provider
@@ -43,8 +44,12 @@ class Runtime:
 
 
 def build_runtime(input_pdf: str | os.PathLike[str], settings: AppSettings) -> Runtime:
-    """Apre il PDF e costruisce provider, cache, resolver e canvas reali."""
-    source = PdfPageSource.open(str(input_pdf))
+    """Apre il PDF (con OCR se è una scansione) e costruisce provider, cache, resolver e canvas."""
+    source = (
+        OcrSource.open(str(input_pdf))
+        if settings.ocr == "auto"
+        else PdfPageSource.open(str(input_pdf))
+    )
     font_source = PdfFontSource(source.doc)
     resolver = FontResolver(
         font_source,
