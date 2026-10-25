@@ -84,11 +84,25 @@ quattro file e un `Runtime`.
 3. **In ogni caso**: mantenere la regola già in vigore — `fitz` solo nei quattro file sopra.
    È ciò che rende la decisione reversibile.
 
-## Decisione richiesta
+## Decisione presa (2026-10-25)
 
-- [ ] A — resto AGPL, nessuna azione
-- [ ] B — avvio la sostituzione dello stack PDF (10–15 giorni)
-- [ ] C — chiedo un preventivo ad Artifex
+- [x] **A — resto su PyMuPDF e accetto l'AGPL-3.0** per le distribuzioni del prodotto
+- [ ] B — sostituzione dello stack PDF (rinviata, resta l'alternativa documentata)
+- [ ] C — licenza commerciale Artifex (rinviata)
 
-Finché la casella non è spuntata, la roadmap 6.5 resta **bloccata da una decisione**, non da
-un problema tecnico.
+Conseguenze operative, già applicate:
+
+1. Il **codice del repository resta MIT** (`LICENSE`): chi lo riusa come libreria non eredita
+   l'AGPL finché non collega PyMuPDF.
+2. **Ogni distribuzione** del programma (binari, AppImage, immagine Docker, servizio hosted)
+   è un'opera combinata con PyMuPDF: va distribuita con **AGPL-3.0** e con l'offerta del
+   sorgente corrispondente. È scritto in [`THIRD_PARTY.md`](../../THIRD_PARTY.md) e nel README.
+3. Il repository pubblico **soddisfa già** l'obbligo di sorgente: nessun passaggio extra per
+   l'uso open source.
+4. La regola «`fitz` solo in quattro file» resta in vigore: è ciò che rende la scelta
+   reversibile se in futuro servirà una licenza permissiva (opzione B).
+5. Chi vuole usare LitteraLit **come libreria** in un prodotto chiuso deve sostituire i
+   quattro adapter (opzione B) oppure acquistare la licenza Artifex (opzione C).
+
+La roadmap 6.5 è quindi **chiusa come decisione**; l'implementazione dell'opzione B, se mai
+servirà, è descritta sopra e non richiede un nuovo documento.

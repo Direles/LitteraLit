@@ -114,6 +114,15 @@ py -m ruff check src tests tools      # lint
 
 ## Licenza
 
-Codice distribuito con licenza **MIT** (vedi [`LICENSE`](LICENSE)).
-I libri tradotti, i PDF e i file di traduzione **non** sono coperti da questa licenza:
-sono opere protette, restano fuori dal repository e non possono essere ridistribuiti.
+Il **codice** è distribuito con licenza **MIT** (vedi [`LICENSE`](LICENSE)).
+Attenzione però: il programma usa **PyMuPDF**, che è distribuito con licenza **AGPL-3.0**.
+
+| Cosa | Licenza |
+|---|---|
+| codice di LitteraLit (libreria, moduli, test) | MIT |
+| **distribuzione del programma** (binari, Docker, servizio hosted) | **AGPL-3.0** |
+| libri tradotti, PDF, file di traduzione | **non coperti**: opere protette, restano fuori dal repository |
+
+Dettagli e conseguenze pratiche in [`THIRD_PARTY.md`](THIRD_PARTY.md); la decisione e le
+alternative (sostituire PyMuPDF o acquistare la licenza commerciale) sono in
+[`docs/architecture/13-licenza.md`](docs/architecture/13-licenza.md).
