@@ -72,7 +72,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 1.3 | Apici/apici di nota: shift di baseline e corpo ridotto, senza declassare il blocco | `rendering/painter.py`, `layout/fitter.py` | **fatto**: `layout/scripts.py` + tag `<sup>`/`<sub>` |
 | 1.4 | Font bundle liberi (Inter, Source Serif, Noto Serif/Sans) + fallback deterministico, via `assets/fonts/` | `fonts/bundled.py`, `tools/fetch_fonts.py` | **fatto**: registro + cascata (embedded → bundle → sistema → base-14); i binari si scaricano con `tools/fetch_fonts.py` |
 | 1.5 | **ToUnicode custom** con `fontTools`: elimina NBSP/soft-hyphen nel testo estratto | `rendering/fitz_canvas.py` | chiude §11.7/1 |
-| 1.6 | Sperimentazione `insert_htmlbox`/`Story` per giustificazione e sillabazione CSS, dietro flag, valutata con 0.1 | `rendering/flow_renderer.py` | decisione go/no-go con numeri |
+| 1.6 | Sperimentazione `insert_htmlbox`/`Story` per giustificazione e sillabazione CSS, dietro flag, valutata con 0.1 | `rendering/flow_renderer.py` | **no-go come sostituto**: misure e motivazioni in [`nota-htmlbox.md`](nota-htmlbox.md) (3× più lento, estrazione pari, multi-run peggiore); resta opzione dietro flag se la giustificazione diventa requisito |
 
 **Accettazione**: fixture mista → SSIM ≥ 0,97, round-trip caratteri ≥ 99,9%, `font_reduced` dimezzato.
 

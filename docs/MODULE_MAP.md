@@ -111,6 +111,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/fonts/fitz_adapter.py` | fonts | Unico punto con `fitz`: `PdfFontSource`, `make_fitz_font` | 60 | **esistente (M5)** | smoke test |
 | `src/pdfbook/fonts/bundled.py` | fonts | Registro del font bundle OFL (Inter, Source Serif, Noto), ricerca su disco | 150 | **esistente (Fase 1.4)** | `tests/unit/test_bundled_fonts.py` |
 | `tools/fetch_fonts.py` | tool | Scarica i font del bundle (OFL) con SHA-256, `--check` senza rete | 120 | **esistente (Fase 1.4)** | `tests/unit/test_bundled_fonts.py` |
+| `tools/experiment_htmlbox.py` | tool | Confronto misurato `TextWriter` vs `insert_htmlbox` su pagina sintetica | 140 | **esistente (Fase 1.6)** | esecuzione manuale (`docs/nota-htmlbox.md`) |
 | `src/pdfbook/translation/json_repair.py` | translation | Parsing JSON tollerante e riparazione | 190 | **esistente (M1)** | `tests/unit/test_json_repair.py` |
 | `src/pdfbook/translation/cache.py` | translation | TM con chiave composta + scrittura atomica | 190 | **esistente (M3)** | `tests/unit/test_cache.py` |
 | `src/pdfbook/translation/cache_prune.py` | translation | Potatura pura della TM per età e numero di voci | 90 | **esistente (Fase 3.5)** | `tests/unit/test_cache_prune.py` |
