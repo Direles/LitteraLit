@@ -129,7 +129,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 5.2 | Chunking per frase (`stanza`/`spaCy`) e contesto scorrevole su 2 pagine | `translation/chunking.py` | coerenza migliore |
 | 5.3 | Memoria terminologica per libro (termini ricorrenti → glossario automatico proposto) | `translation/terminology.py` | |
 | 5.4 | Controlli di qualità del testo: ripetizioni, omissioni (rapporto lunghezze), lingua sbagliata (`langid`), LanguageTool come informativa | `qa/checks_text.py` | **fatto** (senza dipendenze, lingua via stopword); LanguageTool ancora da fare |
-| 5.5 | Profili di stile per libro (formale/informale, "non tradurre") | `config/settings.py` | |
+| 5.5 | Profili di stile per libro (formale/informale, "non tradurre") | `config/settings.py` | **fatto**: `translation/style.py` + `PDFBOOK_STYLE` (fedele, scorrevole, accademico, narrativo) |
 
 **Accettazione**: glossario rispettato al 100% su fixture con termini obbligatori; rilevamento di un'omissione seminata.
 

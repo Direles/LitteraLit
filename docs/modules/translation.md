@@ -129,6 +129,26 @@ Completion(text, tokens_in, tokens_out)         # risposta del provider
   pagina N e N+1, e romperla sarebbe peggio che andare lenti.
 - **Rate limiter** condiviso fra i thread: meglio rallentare che collezionare 429.
 
+## Profili di stile (Fase 5.5)
+
+```python
+resolve("accademico") -> StyleProfile          # ValueError se sconosciuto
+style_rule(profile, number=7) -> str           # "" per il profilo di default
+build_translation_prompt(..., style="narrativo")
+```
+
+| Profilo | Registro | Cosa cambia |
+|---|---|---|
+| `fedele` (default) | neutro | niente: prompt storico, nessuna regola extra |
+| `scorrevole` | naturale | preferisce frasi leggibili ai calchi, niente aggiunte |
+| `accademico` | formale | mantiene hedging e citazioni intatte |
+| `narrativo` | letterario | difende voce e ritmo dell'autore |
+
+Lo stile è **una riga di prompt**, numerata dopo glossario e prima del contesto, e entra
+nella partizione di cache (`setting.style`): due stili diversi non condividono traduzioni.
+Un nome sconosciuto è un errore di configurazione (exit code 2), non un fallback silenzioso —
+così `PDFBOOK_STYLE=accademicoo` si vede subito.
+
 ## Esempio d'uso
 
 ```python

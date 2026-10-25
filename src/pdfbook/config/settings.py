@@ -63,6 +63,7 @@ class AppSettings:
     max_cost: float = 0.0
     inline_styles: bool = True
     reading_order: bool = True
+    style: str = "fedele"
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -77,6 +78,7 @@ class AppSettings:
             target_lang=self.target_lang,
             base_url=self.base_url,
             glossary=self.glossary,
+            style=self.style,
         )
 
     def missing_required(self) -> tuple[str, ...]:
@@ -108,6 +110,7 @@ class AppSettings:
             "max_cost": self.max_cost,
             "inline_styles": self.inline_styles,
             "reading_order": self.reading_order,
+            "style": self.style,
             "has_api_key": bool(self.api_key),
         }
 
@@ -165,6 +168,7 @@ def load_settings(
         max_cost=_as_float(source.get("PDFBOOK_MAX_COST", "0"), 0.0),
         inline_styles=_as_bool(source.get("PDFBOOK_INLINE_STYLES", "1")),
         reading_order=_as_bool(source.get("PDFBOOK_READING_ORDER", "1")),
+        style=source.get("PDFBOOK_STYLE", "fedele").strip() or "fedele",
     )
 
 

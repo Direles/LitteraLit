@@ -13,6 +13,9 @@ from __future__ import annotations
 import json
 from collections.abc import Iterable, Mapping, Sequence
 
+from .style import resolve as resolve_style
+from .style import style_rule
+
 __all__ = [
     "MAX_CONTEXT_CHARS",
     "SHORTEN_MAX_CHARS",
@@ -58,12 +61,14 @@ def build_translation_prompt(
     glossary: Iterable[str] = (),
     context: str | None = None,
     max_context_chars: int = MAX_CONTEXT_CHARS,
+    style: str = "",
 ) -> str:
     """Prompt di sistema per la traduzione di un batch JSON."""
     prompt = _BASE_RULES.format(target_lang=target_lang)
     terms = ", ".join(f"'{term.strip()}'" for term in glossary if term and term.strip())
     if terms:
         prompt += _GLOSSARY_RULE.format(terms=terms)
+    prompt += style_rule(resolve_style(style), number=5 + bool(terms))
     if context and context.strip():
         trimmed = context.strip()[: max(0, max_context_chars)]
         prompt += _CONTEXT_RULE.format(context=trimmed)

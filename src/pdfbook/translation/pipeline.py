@@ -195,6 +195,7 @@ class TranslationPipeline:
             self.settings.target_lang,
             glossary=self.settings.glossary,
             context=context,
+            style=self.settings.style,
         )
         parsed = self._call_with_retries(system, build_user_payload(chunk), tuple(chunk))
         accepted = {key: value for key, value in parsed.items() if chunk.get(key) and value}

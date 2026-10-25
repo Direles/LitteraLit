@@ -215,6 +215,7 @@ class TranslationSettings:
     target_lang: str = "Italiano"
     base_url: str = ""
     glossary: tuple[str, ...] = ()
+    style: str = "fedele"
 
     def __post_init__(self) -> None:
         if not self.provider.strip():
@@ -225,15 +226,15 @@ class TranslationSettings:
     def cache_partition(self) -> str:
         """Identità della configurazione: parte obbligatoria della chiave di cache (R11/M3).
 
-        Include provider, modello, lingua e glossario: due esecuzioni con impostazioni
-        diverse non devono MAI condividere una traduzione.
+        Provider, modello, lingua, glossario e stile: configurazioni diverse non devono MAI
+        condividere una traduzione.
         """
         payload = json.dumps(
             {
                 "provider": self.provider,
                 "model": self.model,
                 "target_lang": self.target_lang,
-                "glossary": list(self.glossary),
+                "glossary": list(self.glossary), "style": self.style,
             },
             ensure_ascii=False,
             sort_keys=True,
