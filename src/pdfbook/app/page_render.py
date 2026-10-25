@@ -10,6 +10,7 @@ from pdfbook.config.settings import AppSettings
 from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, QAReport
 from pdfbook.extraction.scan_detect import is_scanned_page
 from pdfbook.layout.styles import strip_markup
+from pdfbook.layout.writing_system import text_blocks_outside
 from pdfbook.qa.checks_glyphs import check_page_glyphs
 from pdfbook.rendering.vector_renderer import VectorRenderer
 
@@ -40,6 +41,15 @@ def render_and_check(
                 page=page.number,
                 kind=IssueKind.SCAN_PAGE,
                 detail="pagina senza testo (probabile scansione): serve un OCR preliminare",
+            )
+        )
+    for block_id, system in text_blocks_outside(page):
+        report.add(
+            QAIssue(
+                page=page.number,
+                kind=IssueKind.UNSUPPORTED_SCRIPT,
+                block=block_id,
+                detail=f"scrittura '{system}': il shaping/RTL non è ancora supportato dal renderer",
             )
         )
     counters["blocks"] += rendered.blocks

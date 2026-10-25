@@ -66,6 +66,7 @@ class IssueKind(StrEnum):
     REPETITION = "repetition"
     WRONG_LANGUAGE = "wrong_language"
     SCAN_PAGE = "scan_page"
+    UNSUPPORTED_SCRIPT = "unsupported_script"
 
 
 @dataclass(frozen=True)
@@ -224,11 +225,7 @@ class TranslationSettings:
             raise ValueError("model obbligatorio")
 
     def cache_partition(self) -> str:
-        """Identità della configurazione: parte obbligatoria della chiave di cache (R11/M3).
-
-        Provider, modello, lingua, glossario e stile: configurazioni diverse non devono MAI
-        condividere una traduzione.
-        """
+        """Identità della configurazione: parte obbligatoria della chiave di cache (R11/M3)."""
         payload = json.dumps(
             {
                 "provider": self.provider,

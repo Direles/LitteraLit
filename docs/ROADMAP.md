@@ -118,7 +118,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 4.2 | Adapter **ocrmypdf + Tesseract** (CPU): text layer invisibile → la pipeline esistente funziona senza modifiche | `ocr/ocrmypdf_adapter.py` | **fatto**: `OcrSource` trasparente, copia temporanea, `PDFBOOK_OCR=auto\|off` |
 | 4.3 | Adapter **VLM sidecar** (SGLang OpenAI-compatible), parser `<\|det\|>tipo [bbox]` | `ocr/vlm_adapter.py`, `ocr/det_parser.py` | **parziale**: client e parser fatti e testati; la sorgente `DocumentSource` completa richiede un server in CI |
 | 4.4 | QA visivo anche per scansioni: `SCAN_FALLBACK`, confronto con OCR indipendente | `qa/checks_ocr.py` | l'OCR come giudice, non come estrattore |
-| 4.5 | Scritture RTL/CJK: HarfBuzz + Noto, test sintetici | `fonts/`, `rendering/` | nuova classe di libri |
+| 4.5 | Scritture RTL/CJK: HarfBuzz + Noto, test sintetici | `fonts/`, `rendering/` | **parziale**: `layout/writing_system.py` riconosce la scrittura e segnala `unsupported_script`; shaping RTL/CJK da fare |
 
 **Accettazione**: fixture scansionata → traduzione con gate PASS; pagina araba/cinese renderizzata senza glifi mancanti.
 

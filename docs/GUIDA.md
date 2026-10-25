@@ -122,7 +122,7 @@ Le issue **bloccanti** sono quattro e fermano il gate:
 
 Tutto il resto è **informativo**: `font_reduced`, `overflow_shifted`, `clipped`,
 `paragraph_stitched`, `glossary_violation`, `length_ratio`, `repetition`, `wrong_language`,
-`style_flattened`, `scan_page`, `table_misaligned`, `visual_drift`.
+`style_flattened`, `scan_page`, `table_misaligned`, `visual_drift`, `unsupported_script`.
 
 Regola pratica: se il gate passa, il libro è pubblicabile; le informative dicono dove
 guardare per migliorare la resa.
