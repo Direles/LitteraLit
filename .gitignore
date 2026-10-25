@@ -1,0 +1,67 @@
+# ---------------------------------------------------------------
+# Segreti e configurazione locale  (R11 di AGENTS.md)
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+config.json
+conversione gemini/config.json
+*credentials*
+*secrets*
+
+# ---------------------------------------------------------------
+# Contenuti proprietari: opere protette e loro derivati
+# (non pubblicabili: restano solo in locale)
+# ---------------------------------------------------------------
+*.pdf
+translations.json
+translations_data.py
+translations_cache.json
+translations*.json
+extracted_text.json
+batch_*.json
+traduzioni_batch*.json
+temp_translations.json
+*_qa_report.json
+*_DONE.json
+debug_failed_response.txt
+
+# App Gen 2 (conversione gemini/): congelata e sostituita da src/pdfbook.
+# Resta in locale, non viene pubblicata (contiene anche il binario e la cache).
+conversione gemini/
+
+# Script Gen 1 con il testo tradotto del libro incorporato nel codice:
+# sono dati editoriali, non codice pubblicabile (vedi legacy/README.md).
+legacy/build_and_apply.py
+legacy/final_translate.py
+legacy/translate_batch.py
+legacy/fix_remaining.py
+
+# Artefatti di prova/test che contengono pagine dei libri
+test_output/
+*.png
+docs/**/*.png
+
+# ---------------------------------------------------------------
+# Artefatti di build e cache
+# ---------------------------------------------------------------
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# ---------------------------------------------------------------
+# Sistema operativo / editor
+# ---------------------------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/
+*.log
