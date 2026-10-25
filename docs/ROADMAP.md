@@ -4,7 +4,7 @@
 > Stato di partenza: M1–M11 chiusi, P0.5 chiuso, **316 test**, gate di struttura a 0 errori, CI verde.
 > Stato attuale: **548 test**, 128 file, `modularity_check --strict` a 0 errori/0 warning, CI verde.
 > Chiusi: 1.1, 1.2, 1.3, 2.1–2.6, 3.1–3.5, 3.7, 4.1 (riconoscimento scansioni), 5.1, 5.3–5.5, 6.2 (qa/report).
-> Bloccati da binari esterni: 4.2/4.3 (OCR). Font bundle: registro e cascata fatti, i binari si scaricano a parte.
+> Bloccati da binari esterni: solo 4.5 (RTL/CJK richiede HarfBuzz + Noto). Font bundle: registro e cascata fatti, i binari si scaricano con `tools/fetch_fonts.py`. OCR: ocrmypdf e VLM implementati, servono i binari/server per l'esecuzione reale.
 > Questo piano definisce *cosa* manca, *in che ordine*, *come si misura* che sia servito.
 
 ---
@@ -116,7 +116,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 |---|---|---|---|
 | 4.1 | Layer `ocr/` con `OcrSource` che implementa `DocumentSource` | `src/pdfbook/ocr/` | **parziale**: riconoscimento scansioni (`extraction/scan_detect.py`) e messaggio azionabile; l'adapter `OcrSource` richiede i binari (4.2) |
 | 4.2 | Adapter **ocrmypdf + Tesseract** (CPU): text layer invisibile → la pipeline esistente funziona senza modifiche | `ocr/ocrmypdf_adapter.py` | **fatto**: `OcrSource` trasparente, copia temporanea, `PDFBOOK_OCR=auto\|off` |
-| 4.3 | Adapter **VLM sidecar** (SGLang OpenAI-compatible), parser `<\|det\|>tipo [bbox]` | `ocr/vlm_adapter.py`, `ocr/det_parser.py` | riusa il formato di Unlimited-OCR |
+| 4.3 | Adapter **VLM sidecar** (SGLang OpenAI-compatible), parser `<\|det\|>tipo [bbox]` | `ocr/vlm_adapter.py`, `ocr/det_parser.py` | **parziale**: client e parser fatti e testati; la sorgente `DocumentSource` completa richiede un server in CI |
 | 4.4 | QA visivo anche per scansioni: `SCAN_FALLBACK`, confronto con OCR indipendente | `qa/checks_ocr.py` | l'OCR come giudice, non come estrattore |
 | 4.5 | Scritture RTL/CJK: HarfBuzz + Noto, test sintetici | `fonts/`, `rendering/` | nuova classe di libri |
 
