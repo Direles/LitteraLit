@@ -2,9 +2,9 @@
 
 > Documento di pianificazione. Regole: [`AGENTS.md`](../AGENTS.md). Routing: [`MODULE_MAP.md`](MODULE_MAP.md).
 > Stato di partenza: M1–M11 chiusi, P0.5 chiuso, **316 test**, gate di struttura a 0 errori, CI verde.
-> Stato attuale: **663 test**, 148 file, `modularity_check --strict` a 0 errori/0 warning, CI verde (quality-gate + package).
-> Chiusi: 1.1–1.4, 2.1–2.6, 3.1–3.7, 4.1–4.3 (codice; binari a parte), 4.5 (riconoscimento), 5.1–5.5, 6.2, 6.3 (build), 6.4 (guida), 7 (metriche + SLO).
-> Aperti: 6.1 (anteprima a schermo, drag & drop, annulla), 6.3 (PyInstaller/release firmate), 6.5 (decisione licenza), shaping RTL/CJK.
+> Stato attuale: **693 test**, 155 file, `modularity_check --strict` a 0 errori/0 warning, CI verde (quality-gate + package).
+> Chiusi: 1.1–1.6, 2.1–2.6, 3.1–3.7, 4.1–4.4, 4.5 (riconoscimento), 5.1–5.5, 6.1 (parte), 6.2–6.5 (6.5 deciso: opzione A).
+> Aperti: anteprima a schermo e drag & drop nella GUI, firme/notarizzazione delle release, AppImage, shaping RTL/CJK.
 > Bloccati da binari esterni: solo 4.5 (RTL/CJK richiede HarfBuzz + Noto). Font bundle: registro e cascata fatti, i binari si scaricano con `tools/fetch_fonts.py`. OCR: ocrmypdf e VLM implementati, servono i binari/server per l'esecuzione reale.
 > Questo piano definisce *cosa* manca, *in che ordine*, *come si misura* che sia servito.
 
