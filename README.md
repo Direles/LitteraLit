@@ -2,9 +2,10 @@
 
 Traduce libri tecnici in PDF **conservando il layout**: redazione vettoriale del testo originale, riuso dei font embedded, sillabazione nella lingua di destinazione, adattamento tipografico con metriche reali e un report QA per pagina.
 
-> **Stato**: migrazione **completata** (M1–M11). Il codice di produzione vive in `src/pdfbook/`,
-> diviso in moduli con budget dimensionali e test. La vecchia app in `conversione gemini/` è
-> **congelata** in attesa del primo confronto sul campo, il codice Gen 1 è in `legacy/`.
+> **Stato**: migrazione **completata** (M1–M11) e codice pubblicato. Il progetto vive in
+> `src/pdfbook/` (moduli con budget dimensionali e test) e in `docs/`; `legacy/` conserva il
+> codice Gen 1 congelato. **Dati editoriali e app precedente non fanno parte del progetto**:
+> sono stati archiviati fuori dal repository (vedi `SECURITY.md`).
 
 ## Cosa fa
 
@@ -56,9 +57,11 @@ src/pdfbook/     codice di produzione, per layer:
 tools/           modularity_check.py (gate di struttura)
 tests/           test unitari (272)
 docs/            documentazione modulare (indice: docs/architecture/README.md)
-conversione gemini/   app precedente (Gen 2), congelata e **non pubblicata** (vedi `.gitignore`)
-legacy/          codice Gen 1 congelato (53 file)
+legacy/          codice Gen 1 congelato (script storici)
 ```
+
+Il repository contiene **solo codice e documentazione** (≈0,5 MB): nessun PDF, nessuna
+traduzione, nessuna cache. I dati editoriali restano in locale, fuori dal progetto.
 
 ## Contribuire
 
@@ -72,7 +75,7 @@ py -m ruff check src tests tools      # lint
 
 ## Sicurezza e dati
 
-- Nessuna chiave nel repository: vedi [`SECURITY.md`](SECURITY.md). **Ruota le chiavi** se hai usato `conversione gemini/config.json`.
+- Nessuna chiave nel repository: vedi [`SECURITY.md`](SECURITY.md). **Ruota le chiavi** se hai usato l'app precedente (la sua configurazione è archiviata fuori dal progetto).
 - PDF, traduzioni e QA report sono **opere protette**: esclusi da git, uso strettamente personale.
 
 ## Licenza

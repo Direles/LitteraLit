@@ -8,7 +8,10 @@
 
 ## 1. Routing rapido — "se devi… → apri…"
 
-| Se devi… | Apri (target) | Oggi è in (legacy) | NON toccare |
+La colonna *Provenienza* indica da quale file della Gen 2 è stato migrato il modulo: quei file
+sono stati archiviati fuori dal progetto dopo M11 e **non vanno cercati nel repository**.
+
+| Se devi… | Apri (target) | Provenienza (app Gen 2) | NON toccare |
 |---|---|---|---|
 | Cambiare le istruzioni/prompt di traduzione | `translation/prompts.py` | `conversione gemini/translator.py` → `translate_batch` | renderer, fonts |
 | Aggiungere o correggere un provider LLM | `translation/providers/<nome>.py` + `translation/providers/registry.py` | `translator._call_llm` | pipeline, cache |

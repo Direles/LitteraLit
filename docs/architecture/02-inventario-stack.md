@@ -9,9 +9,15 @@
 
 ### 3.1 Mappa delle directory
 
+> **Nota sullo stato attuale.** Questa mappa documenta il repository **al momento dell'analisi**
+> (due generazioni di pipeline). Dopo la migrazione il progetto pubblicato contiene solo
+> `src/pdfbook/`, `docs/`, `tests/`, `tools/`, `legacy/` e i file di progetto (≈0,5 MB):
+> i dati editoriali (PDF, traduzioni, cache, render di test) e l'app Gen 2 sono stati
+> archiviati **fuori dal repository**. Le voci sotto sono conservate come documentazione storica.
+
 ```
 traduzione libri/
-├── conversione gemini/           ← app Gen 2, congelata (solo in locale: esclusa da git)
+├── conversione gemini/           ← app Gen 2, congelata (archiviata fuori dal progetto)
 │   ├── app_gui.py                GUI CustomTkinter (entrypoint storico)
 │   ├── translator.py             adapter multi-provider LLM + cache + parsing robusto
 │   ├── rebuild_vector.py         motore di ricostruzione PDF vettoriale

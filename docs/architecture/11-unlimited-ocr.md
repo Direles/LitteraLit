@@ -60,7 +60,7 @@ Nota metodologica: una parte di questi casi è un falso positivo dovuto al fatto
 | Output `Cohn-ITALIANO2.pdf` | 175 ✔ | 0 |
 | Output `Patton-ITALIANO4.pdf` | **0** ❌ | **112** ❌ |
 
-Interpretazione: dove il renderer usa `fitz.TextWriter` con un oggetto `fitz.Font` reale (font embedded o TTF di sistema — il percorso della Gen 2) i caratteri speciali **sopravvivono**; dove usa le API base-14 (`insert_text` / `insert_textbox` con `fontname='helv'`, tipiche dei renderer Gen 1) vengono **sostituiti**. La sostituzione dipende dall'API, non dal font (esperimento riproducibile in `test_output/_glyph_*.pdf`):
+Interpretazione: dove il renderer usa `fitz.TextWriter` con un oggetto `fitz.Font` reale (font embedded o TTF di sistema — il percorso della Gen 2) i caratteri speciali **sopravvivono**; dove usa le API base-14 (`insert_text` / `insert_textbox` con `fontname='helv'`, tipiche dei renderer Gen 1) vengono **sostituiti**. La sostituzione dipende dall'API, non dal font (esperimento riproducibile: i quattro PDF di prova sono conservati nell'archivio locale `Documents/LitteraLit-archivio/test-output/`):
 
 | Percorso di rendering | `—` | `–` | `’` | Verdetto |
 |---|---|---|---|---|
