@@ -38,6 +38,7 @@ class BlockKind(StrEnum):
     LIST_ITEM = "list_item"
     TABLE_CELL = "table_cell"
     CAPTION = "caption"
+    FURNITURE = "furniture"
     UNKNOWN = "unknown"
 
 
@@ -57,6 +58,7 @@ class IssueKind(StrEnum):
     VISUAL_DRIFT = "visual_drift"
     PARAGRAPH_STITCHED = "paragraph_stitched"
     SPLIT_FAILED = "split_failed"
+    GLOSSARY_VIOLATION = "glossary_violation"
 
 
 @dataclass(frozen=True)

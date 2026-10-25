@@ -83,7 +83,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 2.1 | **Paragraph stitching** fra pagine: rilevamento continuazione, traduzione unica, ridistribuzione sui due box | `layout/flow.py`, `app/page_plan.py` | ✅ **fatto** (14 test + 3 end-to-end) |
 | 2.2 | Issue `PARAGRAPH_STITCHED` (informativa) e `SPLIT_FAILED` (bloccante) | `domain/models.py`, `qa/report.py` | ✅ **fatto** (SPLIT_FAILED nel gate) |
 | 2.3 | Tabelle: rilevamento (regole geometriche o `pdfplumber`) e rendering cella per cella | `layout/tables.py`, `rendering/table_painter.py` | |
-| 2.4 | Header/footer/numero pagina: classificati e **non** tradotti (o tradotti a parte) | `layout/segmentation.py` | riduce rumore e falsi shift |
+| 2.4 | Header/footer/numero pagina: classificati e **non** tradotti | `layout/page_furniture.py`, `app/page_plan.py` | ✅ **fatto** (10 test) |
 | 2.5 | Ordine di lettura multi-colonna: colonne vere, non solo righe affiancate | `layout/segmentation.py` | |
 | 2.6 | Note a piè di pagina: riferimento apice ↔ nota, gruppo mantenuto insieme | `layout/notes.py` | dipende da 1.3 |
 
@@ -125,7 +125,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 | # | Deliverable | File | Note |
 |---|---|---|---|
-| 5.1 | Glossario **vincolante**: verifica `rapidfuzz` + issue `GLOSSARY_VIOLATION`; glossario con traduzione imposta | `translation/pipeline.py`, `qa/checks_glossary.py` | |
+| 5.1 | Glossario **vincolante**: verifica dei termini presenti nell'originale e assenti nella traduzione (issue informativa) | `qa/checks_glossary.py`, `app/pipeline.py` | ✅ **fatto** (8 test, senza dipendenze nuove) |
 | 5.2 | Chunking per frase (`stanza`/`spaCy`) e contesto scorrevole su 2 pagine | `translation/chunking.py` | coerenza migliore |
 | 5.3 | Memoria terminologica per libro (termini ricorrenti → glossario automatico proposto) | `translation/terminology.py` | |
 | 5.4 | Controlli di qualità del testo: ripetizioni, omissioni (rapporto lunghezze), lingua sbagliata (`langid`), LanguageTool come informativa | `qa/checks_text.py` | |

@@ -80,6 +80,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/layout/hyphenation.py` | layout | Sillabazione per lingua (pyphen, degrado dichiarato) | 90 | **esistente (M6)** | `tests/unit/test_hyphenation.py` |
 | `src/pdfbook/layout/toc.py` | layout | Riconoscimento e riallineamento delle righe d'indice | 70 | **esistente (M6)** | `tests/unit/test_toc.py` |
 | `src/pdfbook/layout/flow.py` | layout | Paragraph stitching fra pagine + ridistribuzione della traduzione | 200 | **esistente (Fase 2)** | `tests/unit/test_flow.py` |
+| `src/pdfbook/layout/page_furniture.py` | layout | Header, footer e numeri di pagina: riconoscimento per ricorrenza | 110 | **esistente (Fase 2.4)** | `tests/unit/test_page_furniture.py` |
 | `src/pdfbook/app/page_plan.py` | app | Unità di traduzione per pagina e destinazioni (con stitching) | 110 | **esistente (Fase 2)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/layout/tables.py` | layout | Rilevamento e struttura delle tabelle | 180 | pianificato (Fase 2) | `tests/unit/test_tables.py` |
 | `src/pdfbook/qa/checks_visual.py` | qa | SSIM/pixel-diff originale↔output | 150 | pianificato (Fase 0) | `tests/unit/test_checks_visual.py` |
@@ -106,6 +107,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/rendering/fitz_canvas.py` | rendering | Unico punto con `fitz`: redaction + `TextWriter` per colore | 90 | **esistente (M9)** | smoke test |
 | `src/pdfbook/qa/report.py` | qa | Formato compatibile, scrittura atomica, `gate()` | 150 | **esistente (M10)** | `tests/unit/test_qa_report.py` |
 | `src/pdfbook/qa/checks_glyphs.py` | qa | Glyph-diff atteso/reso con normalizzazione NBSP | 110 | **esistente (P0.5)** | `tests/unit/test_checks_glyphs.py` |
+| `src/pdfbook/qa/checks_glossary.py` | qa | Verifica che i termini del glossario restino invariati | 80 | **esistente (Fase 5.1)** | `tests/unit/test_checks_glossary.py` |
 | `src/pdfbook/qa/checks_geometry.py` | qa | Sovrapposizioni e clipping dei run disegnati | 130 | **esistente (P0.5)** | `tests/unit/test_checks_geometry.py` |
 | `src/pdfbook/qa/textnorm.py` | qa | Normalizzazione del testo estratto (NBSP, soft hyphen, punteggiatura) | 90 | **esistente (P0.5)** | `tests/unit/test_textnorm.py` |
 | `src/pdfbook/gui/app.py` | gui | Finestra, thread worker, progress, log | 220 | **esistente (M11)** | smoke manuale |

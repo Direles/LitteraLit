@@ -16,6 +16,7 @@ from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, QAReport
 from pdfbook.layout.flow import split_translation
 from pdfbook.layout.hyphenation import Hyphenation
 from pdfbook.qa.checks_geometry import run_box
+from pdfbook.qa.checks_glossary import check_glossary
 from pdfbook.qa.checks_glyphs import check_page_glyphs
 from pdfbook.qa.checks_visual import check_page_visual
 from pdfbook.qa.report import gate, write_report
@@ -166,6 +167,13 @@ class TranslationJob:
         if not plan.requests:
             return translations
         outcome: TranslationOutcome = translator.translate(plan.requests, context=previous)
+        for issue in check_glossary(
+            plan.page.number,
+            plan.requests,
+            outcome.translations,
+            self.spec.settings.glossary,
+        ):
+            report.add(issue)
         for unit_key, value in outcome.translations.items():
             target = plan.targets.get(unit_key)
             if target is None:

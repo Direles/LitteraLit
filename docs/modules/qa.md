@@ -47,6 +47,21 @@ mancanti produce `text_missing`.
   verticali e il 25% dell'area della più piccola;
 - `clipped` quando una riga esce dalla pagina oltre 2 pt.
 
+## Verifica del glossario (Fase 5.1)
+
+```python
+check_glossary(page, originals, translations, glossary) -> list[QAIssue]
+contains_term(text, term) -> bool        # case/space-insensitive, nessun fuzzy
+```
+
+Per ogni unità: se un termine del glossario compare nell'originale e **non** compare nella
+traduzione, si registra `glossary_violation` con il termine mancante. È una issue
+**informativa**: il glossario è un vincolo di stile, non un errore bloccante; il gate resta
+sui difetti che perdono contenuto.
+
+Nessuna dipendenza aggiunta: un falso positivo qui costa più di un falso negativo, quindi
+niente fuzzy matching.
+
 ## Verifica sui difetti noti del progetto
 
 | Caso | Risultato |

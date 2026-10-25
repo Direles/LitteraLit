@@ -41,6 +41,23 @@ chiamante registra `split_failed` (bloccante), invece di pubblicare una pagina m
 **Costo noto**: il job materializza le pagine dell'intervallo per guardare avanti di una pagina.
 Per libri enormi è il primo punto da ottimizzare (streaming a finestra).
 
+## Header, footer e numeri di pagina (Fase 2.4)
+
+```python
+detect_furniture(pages) -> set[(page_index, block_id)]
+in_margin(block, page) -> bool          # fascia alta/bassa = 10% dell'altezza
+is_page_number(text) -> bool           # arabo o romano isolato
+normalize(text) -> str                 # minuscolo, cifre/romani → '#'
+```
+
+Riconoscimento per **ricorrenza**: blocco in fascia, non strutturato, con testo normalizzato
+identico su almeno `max(2, 30% delle pagine)`; un numero isolato in fascia è furniture anche
+su una pagina sola. I blocchi riconosciuti non vengono tradotti: il loro testo originale
+viene rimesso nel PDF tale e quale (`PagePlan.incoming`).
+
+Effetto: niente più titoli correnti tradotti a metà né numeri di pagina "tradotti", e meno
+rumore nei confronti del QA.
+
 ## Segmentazione e allineamento (M7)
 
 ```python

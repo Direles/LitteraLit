@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 
 from pdfbook.domain.models import PageLayout, TextBlock
 from pdfbook.layout.flow import Continuation, detect_continuations, merged_text
+from pdfbook.layout.page_furniture import detect_furniture
 from pdfbook.layout.segmentation import is_structured_block
 
 __all__ = ["PagePlan", "UnitTarget", "block_units", "build_plans"]
@@ -54,15 +55,26 @@ def block_units(page: PageLayout) -> dict[str, str]:
     return units
 
 
-def build_plans(pages: Sequence[PageLayout], *, stitch: bool = True) -> list[PagePlan]:
-    """Costruisce un piano per pagina, unendo le continuazioni se ``stitch`` è attivo."""
-    plans = [PagePlan(page=page, requests=block_units(page)) for page in pages]
+def build_plans(
+    pages: Sequence[PageLayout], *, stitch: bool = True, furniture: bool = True
+) -> list[PagePlan]:
+    """Costruisce un piano per pagina: unisce le continuazioni e isola header/footer."""
+    serving = detect_furniture(pages) if furniture else set()
+    plans: list[PagePlan] = []
+    for index, page in enumerate(pages):
+        requests = block_units(page)
+        static: dict[str, str] = {}
+        for block in page.blocks:
+            if (index, block.id) in serving and block.id in requests:
+                requests.pop(block.id)
+                static[block.id] = block.text
+        plans.append(PagePlan(page=page, requests=requests, incoming=static))
     if not stitch:
+        for plan in plans:
+            plan.targets = {key: UnitTarget(first_block=key) for key in plan.requests}
         return plans
-    for target in plans:
-        target.targets = {
-            key: UnitTarget(first_block=key) for key in target.requests
-        }
+    for plan in plans:
+        plan.targets = {key: UnitTarget(first_block=key) for key in plan.requests}
     for continuation in detect_continuations(pages):
         _apply(plans, continuation)
     return plans
