@@ -7,8 +7,10 @@ Formato: [Keep a Changelog](https://keepachangelog.com/it/1.1.0/); versioni [Sem
 ### Aggiunto
 
 - **Shaping RTL/CJK** — i blocchi in arabo, ebraico, devanagari, cinese, giapponese e coreano
-  passano dal motore HTML di PyMuPDF (`insert_htmlbox`) con direzione corretta e catena di font
-  Noto; issue `shaped_text`, contatore `shaped`, impostazione `PDFBOOK_SHAPING`.
+  possono passare dal motore HTML di PyMuPDF (`insert_htmlbox`) con direzione corretta e
+  catena di font Noto; issue `shaped_text`, contatore `shaped`, impostazione `PDFBOOK_SHAPING`.
+  **Spento di default**: misurazioni alla mano, il percorso HTML non produce un ToUnicode
+  corretto e il testo estratto diventa `?`; resta disponibile per prove sulla resa visiva.
 - **Anteprima prima/dopo nella GUI** — testo a fronte per pagina (`gui/preview.py`,
   `preview_window.py`) con copertura dei blocchi tradotti.
 - **Drag & drop** del PDF nella GUI con l'extra opzionale `tkinterdnd2`.

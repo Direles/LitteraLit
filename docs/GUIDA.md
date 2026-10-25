@@ -76,7 +76,7 @@ sovrascrivere da riga di comando.
 | `PDFBOOK_READING_ORDER` | ricostruisce l'ordine delle pagine a due colonne | `1` |
 | `PDFBOOK_VISUAL_QA` | controllo visivo (SSIM mascherato) | `1` |
 | `PDFBOOK_OCR` | `auto` usa ocrmypdf sulle scansioni, `off` lo disattiva | `auto` |
-| `PDFBOOK_SHAPING` | shaping RTL/CJK via HTML (disattivabile con `0`) | `1` |
+| `PDFBOOK_SHAPING` | shaping RTL/CJK via HTML (sperimentale, spento: testo non estraibile) | `0` |
 | `PDFBOOK_LOG_FILE` | dove scrivere il log (rotazione 2 MB × 3) | cartella di sistema |
 
 ### Modello locale (nessun costo, nessuna chiave)

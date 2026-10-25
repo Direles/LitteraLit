@@ -12,10 +12,23 @@ python tools/fetch_fonts.py --check    # solo verifica
 
 | Famiglia | File attesi | Ruolo |
 |---|---|---|
-| `inter` | `Inter-{Regular,Bold,Italic,BoldItalic}.ttf` | sans-serif (Helvetica, Arial, Franklin) |
-| `source-serif` | `SourceSerif4-{Regular,Bold,It,BoldIt}.ttf` | serif da testo (Minion, Times, Georgia) |
-| `noto-serif` | `NotoSerif-{Regular,Bold,Italic,BoldItalic}.ttf` | copertura ampia |
-| `noto-sans` | `NotoSans-{Regular,Bold,Italic,BoldItalic}.ttf` | copertura ampia, sans |
+| `source-serif` | `SourceSerif4-{Regular,Bold,It,BoldIt}.ttf` (statici) | serif da testo (Minion, Times, Georgia) |
+| `inter` | `InterVariable.ttf` | sans-serif, solo regular |
+| `noto-serif` / `noto-sans` | `Noto{Serif,Sans}-Variable.ttf` | copertura ampia (latino, greco, cirillico) |
+| `noto-arabic` | `NotoNaskhArabic-Variable.ttf` | arabo (RTL) |
+
+L'ebraico e il CJK restano fuori dal bundle: i Noto variabili espongono l'istanza *Thin* (peggio
+del font di sistema) e il Serif CJK pesa ~25 MB per lingua. Per quei libri si usano i font
+del sistema operativo.
+
+## Cosa serve davvero il bundle
+
+| Caso | Serve? |
+|---|---|
+| Libro latino su una macchina con font di sistema normali | **no**: la cascata usa i font embedded del PDF, poi quelli di sistema |
+| Output riproducibile identico su macchine diverse (golden, confronti SSIM) | **sì**: le metriche non dipendono dall'OS |
+| Libro con arabo (shaping via HTML) | **no**: il shaping risolve i nomi di famiglia tramite il sistema operativo, non legge questa cartella |
+| Font del libro assente dal sistema (es. Minion) | **sì**, se vuoi una serif coerente invece di quella di ripiego |
 
 ## Come vengono usati
 

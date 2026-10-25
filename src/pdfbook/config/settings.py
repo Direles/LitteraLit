@@ -65,7 +65,7 @@ class AppSettings:
     inline_styles: bool = True
     reading_order: bool = True
     style: str = "fedele"
-    shaping: bool = True
+    shaping: bool = False
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -174,7 +174,7 @@ def load_settings(
         max_cost=_as_float(source.get("PDFBOOK_MAX_COST", "0"), 0.0),
         inline_styles=_as_bool(source.get("PDFBOOK_INLINE_STYLES", "1")),
         reading_order=_as_bool(source.get("PDFBOOK_READING_ORDER", "1")),
-        shaping=_as_bool(source.get("PDFBOOK_SHAPING", "1")),
+        shaping=_as_bool(source.get("PDFBOOK_SHAPING", "0")),
         style=source.get("PDFBOOK_STYLE", "fedele").strip() or "fedele",
         ocr=source.get("PDFBOOK_OCR", "auto").strip().lower() or "auto",
     )

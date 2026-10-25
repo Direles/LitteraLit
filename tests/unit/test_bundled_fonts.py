@@ -27,9 +27,11 @@ class FakeFont:
         return len(text) * fontsize
 
 
-def touch_family(root: Path, family: str, *, styles=((False, False), (True, False))):
-    for style in styles:
-        name = BUNDLE_FAMILIES[family][style]
+def touch_family(root: Path, family: str, *, styles=None):
+    available = BUNDLE_FAMILIES[family]
+    wanted = styles if styles is not None else list(available)
+    for style in wanted:
+        name = available[style]
         (root / name).write_bytes(b"\x00" * 8)
 
 
@@ -52,14 +54,14 @@ class DiscoveryTest(unittest.TestCase):
         self.assertTrue(bundle.path_for("inter", False, False))
         # L'italic manca: si ripiega sul regular della stessa famiglia.
         self.assertEqual(
-            Path(bundle.path_for("inter", False, True)).name, "Inter-Regular.ttf"
+            Path(bundle.path_for("inter", False, True)).name, "InterVariable.ttf"
         )
 
     def test_missing_italic_falls_back_to_regular(self):
         touch_family(self.root, "inter")
         bundle = BundledFonts.discover(self.root)
         self.assertEqual(
-            Path(bundle.path_for("inter", False, True)).name, "Inter-Regular.ttf"
+            Path(bundle.path_for("inter", False, True)).name, "InterVariable.ttf"
         )
 
     def test_unknown_style_name_is_ignored(self):
@@ -97,6 +99,12 @@ class FamilyMatchTest(unittest.TestCase):
 
     def test_unknown_family_returns_none(self):
         self.assertIsNone(bundle_family_for("Wingdings-Regular", self.bundle))
+
+    def test_exact_path_does_not_substitute_bold_with_regular(self):
+        touch_family(self.root, "inter")
+        bundle = BundledFonts.discover(self.root)
+        self.assertIsNotNone(bundle.exact_path_for("inter", False, False))
+        self.assertIsNone(bundle.exact_path_for("inter", True, False))
 
 
 class ResolverPriorityTest(unittest.TestCase):

@@ -33,21 +33,25 @@ Un libro tradotto con font arbitrari di sistema cambia metrica da macchina a mac
 golden non sono riproducibili e il PDF esce diverso per ogni utente. Il bundle è un insieme
 piccolo e dichiarato di famiglie OFL:
 
-| Famiglia | Ruolo |
-|---|---|
-| `inter` | sans-serif (Helvetica, Arial, Franklin) |
-| `source-serif` | serif da testo (Minion, Times, Georgia) |
-| `noto-serif` / `noto-sans` | copertura ampia |
+| Famiglia | File | Ruolo |
+|---|---|---|
+| `source-serif` | `SourceSerif4-{Regular,Bold,It,BoldIt}.ttf` | serif da testo (Minion, Times, Georgia) |
+| `inter` | `InterVariable.ttf` | sans-serif (solo regular) |
+| `noto-serif` / `noto-sans` | `Noto{Serif,Sans}-Variable.ttf` | copertura ampia |
+| `noto-arabic` | `NotoNaskhArabic-Variable.ttf` | arabo (RTL) |
 
 ```python
-BundledFonts.discover(root=None)          # PDFBOOK_FONT_DIR o assets/fonts
-bundle.path_for(family, bold, italic)     # ripiego su regular della stessa famiglia
-bundle_family_for(pdf_font_name, bundle)  # MinionPro-Regular -> source-serif
+BundledFonts.discover(root=None)                  # PDFBOOK_FONT_DIR o assets/fonts
+bundle.exact_path_for(family, bold, italic)       # solo lo stile esatto: mai bold→regular
+bundle_family_for(pdf_font_name, bundle)          # MinionPro-Regular -> source-serif
 ```
 
+Solo lo **stile esatto**: un grassetto non viene mai reso con il regular (sarebbe una perdita
+di formattazione silenziosa); se lo stile manca si passa al font di sistema.
+
 I binari **non sono nel repository** (vedi [`assets/fonts/README.md`](../../assets/fonts/README.md)):
-si scaricano con `python tools/fetch_fonts.py`. Se la cartella è vuota la cascata funziona come
-prima e `bundle_fonts_used` resta a zero.
+si scaricano con `python tools/fetch_fonts.py` (Source Serif statica + Noto variabili, ~5 MB).
+Senza bundle la cascata funziona come prima e `bundle_fonts_used` resta a zero.
 
 
 ## Interfaccia

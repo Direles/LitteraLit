@@ -32,30 +32,27 @@ __all__ = [
 ]
 
 #: Famiglie del bundle: nome logico → file per stile.
+#: Solo file con **istanza statica o variabile "Regular"**: un grassetto non viene mai
+#: sostituito con il regular (il resolver chiede lo stile esatto), quindi non si degrada il peso.
+#: L'ebraico resta fuori: i Noto variabili espongono l'istanza Thin, peggio del font di sistema.
 BUNDLE_FAMILIES: dict[str, dict[tuple[bool, bool], str]] = {
-    "inter": {
-        (False, False): "Inter-Regular.ttf",
-        (True, False): "Inter-Bold.ttf",
-        (False, True): "Inter-Italic.ttf",
-        (True, True): "Inter-BoldItalic.ttf",
-    },
     "source-serif": {
         (False, False): "SourceSerif4-Regular.ttf",
         (True, False): "SourceSerif4-Bold.ttf",
         (False, True): "SourceSerif4-It.ttf",
         (True, True): "SourceSerif4-BoldIt.ttf",
     },
+    "inter": {
+        (False, False): "InterVariable.ttf",
+    },
     "noto-serif": {
-        (False, False): "NotoSerif-Regular.ttf",
-        (True, False): "NotoSerif-Bold.ttf",
-        (False, True): "NotoSerif-Italic.ttf",
-        (True, True): "NotoSerif-BoldItalic.ttf",
+        (False, False): "NotoSerif-Variable.ttf",
     },
     "noto-sans": {
-        (False, False): "NotoSans-Regular.ttf",
-        (True, False): "NotoSans-Bold.ttf",
-        (False, True): "NotoSans-Italic.ttf",
-        (True, True): "NotoSans-BoldItalic.ttf",
+        (False, False): "NotoSans-Variable.ttf",
+    },
+    "noto-arabic": {
+        (False, False): "NotoNaskhArabic-Variable.ttf",
     },
 }
 
@@ -77,7 +74,9 @@ BUNDLED_PRIORITY: tuple[tuple[tuple[str, ...], str], ...] = (
         ),
         "source-serif",
     ),
-    (("notoserif", "notosans", "dejavu"), "noto-serif"),
+    (("notoserif",), "noto-serif"),
+    (("notosans", "dejavu"), "noto-sans"),
+    (("naskh", "arabic"), "noto-arabic"),
 )
 
 
@@ -126,6 +125,11 @@ class BundledFonts:
             if path is not None:
                 return str(path)
         return None
+
+    def exact_path_for(self, family: str, bold: bool, italic: bool) -> str | None:
+        """Solo lo stile esatto: evita di rendere un grassetto con il regular."""
+        path = self.files.get(family, {}).get((bold, italic))
+        return str(path) if path is not None else None
 
     def families_for(self, pdf_font_name: str) -> Iterable[str]:
         """Famiglie del bundle compatibili con un nome font del PDF, in ordine di preferenza."""

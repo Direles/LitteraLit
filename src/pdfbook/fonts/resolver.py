@@ -231,7 +231,7 @@ class FontResolver:
         if family is None:
             return None
         _family_class, bold, italic = classify(pdf_font_name)
-        path = self.bundle.path_for(family, bold, italic)
+        path = self.bundle.exact_path_for(family, bold, italic)
         if not path:
             return None
         font = self._make(path=path)

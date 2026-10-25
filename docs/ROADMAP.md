@@ -119,7 +119,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 4.2 | Adapter **ocrmypdf + Tesseract** (CPU): text layer invisibile → la pipeline esistente funziona senza modifiche | `ocr/ocrmypdf_adapter.py` | **fatto**: `OcrSource` trasparente, copia temporanea, `PDFBOOK_OCR=auto\|off` |
 | 4.3 | Adapter **VLM sidecar** (SGLang OpenAI-compatible), parser `<\|det\|>tipo [bbox]` | `ocr/vlm_adapter.py`, `ocr/det_parser.py` | **parziale**: client e parser fatti e testati; la sorgente `DocumentSource` completa richiede un server in CI |
 | 4.4 | QA visivo anche per scansioni: `SCAN_FALLBACK`, confronto con OCR indipendente | `qa/checks_ocr.py` | **fatto (motore-agnostico)**: `compare_transcripts`/`check_transcripts` con similarità ≥ 0,90; l'aggancio al secondo motore va fatto quando c'è un servizio OCR in CI |
-| 4.5 | Scritture RTL/CJK: HarfBuzz + Noto, test sintetici | `fonts/`, `rendering/` | **fatto**: `rendering/shaped.py` usa il motore HTML di PyMuPDF (shaping + bidi), catena di font con Noto, `PDFBOOK_SHAPING`; la resa dipende dal font installato (bundle Noto) |
+| 4.5 | Scritture RTL/CJK: HarfBuzz + Noto, test sintetici | `fonts/`, `rendering/` | **sperimentale, spento di default**: `rendering/shaped.py` disegna con shaping via HTML ma il testo estratto diventa `?` (ToUnicode assente nel percorso HTML di PyMuPDF). Riconoscimento + `unsupported_script` restano attivi |
 
 **Accettazione**: fixture scansionata → traduzione con gate PASS; pagina araba/cinese renderizzata senza glifi mancanti.
 

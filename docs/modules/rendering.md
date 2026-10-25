@@ -67,22 +67,24 @@ and Planning*, pagine 16–17 (indice + corpo):
 
 `TextWriter` posiziona i glifi uno dopo l'altro: per arabo, ebraico, devanagari, cinese,
 giapponese e coreano serve il **shaping** (forme contestuali, legature, direzione). PyMuPDF lo
-offre solo attraverso il motore HTML/CSS, quindi i blocchi in quelle scritture passano da
-`rendering/shaped.py` → `canvas.insert_markup` → `page.insert_htmlbox`:
+offre solo via HTML/CSS, quindi `rendering/shaped.py` → `canvas.insert_markup` →
+`page.insert_htmlbox` con `dir` e catena di font (Noto in testa).
 
-```css
-* { font-family: 'Noto Naskh Arabic', 'Amiri', 'Segoe UI', serif;
-    direction: rtl; text-align: right; font-size: 10pt; }
+**Stato: sperimentale, spento di default** (`PDFBOOK_SHAPING=0`). Motivo misurato:
+
+```
+placed=True   estratto="? ? ? ? …"
 ```
 
-Dettagli:
+Il percorso HTML di PyMuPDF disegna i glifi ma **non scrive un ToUnicode corretto**: il testo
+tratto diventa `?`, quindi copia/ricerca e round-trip si rompono. Con il shaping attivo il
+QA lo segnala lo stesso (`glyph_missing` bloccante, `roundtrip_loss` informativa), ma il PDF
+non \xe8 ricercabile: per un libro questo \xe8 peggio di un riferimento di nota tolto.
 
-- la **direzione** viene dalla scrittura (`arabic`/`hebrew` → `rtl`), non dalla lingua di arrivo;
-- la catena di font parte dal bundle (Noto) e ripiega su nomi di sistema diffusi;
-- se il riquadro non basta, `insert_htmlbox` riduce fino al 60% del corpo (`scale_low=0.6`);
-- il fallimento non è silenzioso: si ricade sul painter di prosa (glifi mancanti segnalati dal
-  QA) e l'issue `shaped_text` documenta i blocchi resi via HTML;
-- `PDFBOOK_SHAPING=0` disattiva il passo e riabilita `unsupported_script` come segnalazione.
+Quando riattivarlo: quando esister\xe0 un percorso con CMap corretto (ToUnicode custom via
+`fontTools`, Fase 1.5) o un renderer esterno (opzione B di licenza: HarfBuzz + ReportLab).
+Fino ad allora, con shaping spento il comportamento \xe8 quello storico: il blocco non latino
+viene segnalato come `unsupported_script` e non si finge di averlo risolto.
 
 ## Limiti noti (misurati)
 

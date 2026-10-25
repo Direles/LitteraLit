@@ -1,8 +1,8 @@
 """Scarica i font del bundle (Fase 1.4).
 
 I binari non stanno nel repository: pesano, e la licenza OFL vuole che l'attribuzione viaggi
-con i file. Questo script li prende da una sorgente nota e li mette in ``assets/fonts``,
-stampando percorso, byte e SHA-256 così il pin è verificabile a mano.
+con i file. Questo script li prende da sorgenti note (Google Fonts, Adobe) e li mette in
+``assets/fonts``, stampando percorso, byte e SHA-256 così il pin è verificabile a mano.
 
     py tools/fetch_fonts.py                 # tutte le famiglie mancanti
     py tools/fetch_fonts.py --family inter  # solo una
@@ -25,30 +25,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from pdfbook.fonts.bundled import BUNDLE_FAMILIES, BundledFonts, default_bundle_root  # noqa: E402
 
+_GOOGLE = "https://github.com/google/fonts/raw/main/ofl/"
 _SOURCES: dict[str, str] = {
-    "Inter-Regular.ttf": "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Regular.ttf",
-    "Inter-Bold.ttf": "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Bold.ttf",
-    "Inter-Italic.ttf": "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Italic.ttf",
-    "Inter-BoldItalic.ttf": "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-BoldItalic.ttf",
+    # Adobe Source Serif 4: quattro stili statici (serif da testo, peso corretto).
+    "SourceSerif4-Regular.ttf": "https://github.com/adobe-fonts/source-serif/raw/release/TTF/SourceSerif4-Regular.ttf",
+    "SourceSerif4-Bold.ttf": "https://github.com/adobe-fonts/source-serif/raw/release/TTF/SourceSerif4-Bold.ttf",
+    "SourceSerif4-It.ttf": "https://github.com/adobe-fonts/source-serif/raw/release/TTF/SourceSerif4-It.ttf",
+    "SourceSerif4-BoldIt.ttf": "https://github.com/adobe-fonts/source-serif/raw/release/TTF/SourceSerif4-BoldIt.ttf",
+    # Inter: upstream distribuisce solo il variabile (una istanza: usata per il regular).
+    "InterVariable.ttf": _GOOGLE + "inter/Inter%5Bopsz%2Cwght%5D.ttf",
+    # Noto variabili: copertura ampia (latino, greco, cirillico), una sola istanza.
+    "NotoSerif-Variable.ttf": _GOOGLE + "notoserif/NotoSerif%5Bwdth%2Cwght%5D.ttf",
+    "NotoSans-Variable.ttf": _GOOGLE + "notosans/NotoSans%5Bwdth%2Cwght%5D.ttf",
+    # RTL: arabo (istanza Regular del variabile). L'ebraico resta ai font di sistema.
+    "NotoNaskhArabic-Variable.ttf": _GOOGLE + "notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf",
 }
-#: Adobe Source Serif e Google Noto arrivano dai loro repository ufficiali.
-_SOURCES.update(
-    {
-        name: "https://github.com/adobe-fonts/source-serif/raw/release/TTF/" + name
-        for styles in (BUNDLE_FAMILIES["source-serif"],)
-        for name in styles.values()
-    }
-)
-_SOURCES.update(
-    {
-        name: "https://github.com/notofonts/latin-greek-cyrillic/raw/main/unhinted/ttf/"
-        + name.split("-")[0]
-        + "/"
-        + name
-        for family in ("noto-serif", "noto-sans")
-        for name in BUNDLE_FAMILIES[family].values()
-    }
-)
+
+#: Famiglie troppo grandi per il bundle: si usano i font di sistema o un'installazione manuale.
+_SKIP_NOTE = {
+    "noto-cjk": "Noto Serif CJK pesa ~25 MB per lingua: installalo dal sistema se ti serve il cinese.",
+}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -81,11 +77,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {name}: {len(payload)} byte  sha256={hashlib.sha256(payload).hexdigest()[:16]}…")
     bundle = BundledFonts.discover(root)
     print(f"Famiglie disponibili: {', '.join(bundle.available()) or 'nessuna'}")
+    for note in _SKIP_NOTE.values():
+        print(f"Nota: {note}")
+    if failures:
+        print(f"{failures} file non scaricati: controlla la rete o aggiorna le URL.")
     print("Aggiungi le licenze OFL accanto ai font quando li distribuisci.")
     return 0 if not failures else 1
 
 
-def _download(url: str, *, timeout: float = 60.0) -> bytes:
+def _download(url: str, *, timeout: float = 120.0) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": "LitteraLit-font-fetch"})
     with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - URL noti
         return response.read()
@@ -102,7 +102,7 @@ def _wanted(family: str | None) -> list[str]:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fetch_fonts", description="Scarica i font del bundle")
     parser.add_argument("--dest", default=None, help="cartella di destinazione (default assets/fonts)")
-    parser.add_argument("--family", default=None, help="inter, source-serif, noto-serif, noto-sans")
+    parser.add_argument("--family", default=None, help=", ".join(BUNDLE_FAMILIES))
     parser.add_argument("--check", action="store_true", help="elenca i file mancanti senza scaricare")
     return parser
 
