@@ -113,6 +113,32 @@ class StructuredTest(unittest.TestCase):
         self.assertEqual(result.perfect, 0)
 
 
+class CellRenderTest(unittest.TestCase):
+    def test_cell_never_shifts(self):
+        from pdfbook.domain.models import BlockKind
+
+        cell = make_block("b0", [make_line("molto lungo " * 6)], bbox=Rect(0, 100, 120, 112))
+        cell.kind = BlockKind.TABLE_CELL
+        below = make_block("b1", [make_line("sotto", y0=120.0)])
+        canvas = FakeCanvas()
+        renderer(overflow_policy="keep_size").render_page(
+            canvas, make_page(cell, below), {"b0": "testo " * 40, "b1": "sotto"}
+        )
+        # La cella resta alla sua baseline: non viene spostata da chi la precede.
+        self.assertAlmostEqual(canvas.runs[0].baseline_y, 110.0)
+
+    def test_cell_overflow_is_reported_as_misaligned(self):
+        from pdfbook.domain.models import BlockKind
+
+        cell = make_block("b0", [make_line("x")], bbox=Rect(0, 100, 60, 112))
+        cell.kind = BlockKind.TABLE_CELL
+        canvas = FakeCanvas()
+        result = renderer().render_page(
+            canvas, make_page(cell), {"b0": "parola " * 20}
+        )
+        self.assertIn(IssueKind.TABLE_MISALIGNED, [issue.kind for issue in result.issues])
+
+
 class LayoutTest(unittest.TestCase):
     def test_centered_block_is_drawn_centered(self):
         block = make_block("b0", [make_line("Titolo", x0=250, width=100)], bbox=Rect(250, 100, 350, 112))

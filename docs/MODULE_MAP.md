@@ -90,7 +90,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/layout/flow.py` | layout | Paragraph stitching fra pagine + ridistribuzione della traduzione | 200 | **esistente (Fase 2)** | `tests/unit/test_flow.py` |
 | `src/pdfbook/layout/page_furniture.py` | layout | Header, footer e numeri di pagina: riconoscimento per ricorrenza | 110 | **esistente (Fase 2.4)** | `tests/unit/test_page_furniture.py` |
 | `src/pdfbook/app/page_plan.py` | app | Unità di traduzione per pagina e destinazioni (con stitching) | 110 | **esistente (Fase 2)** | `tests/unit/test_app_pipeline.py` |
-| `src/pdfbook/layout/tables.py` | layout | Rilevamento e struttura delle tabelle | 180 | pianificato (Fase 2) | `tests/unit/test_tables.py` |
+| `src/pdfbook/layout/tables.py` | layout | Riconoscimento tabelle dalla geometria e marcatura delle celle | 140 | **esistente (Fase 2.3)** | `tests/unit/test_tables.py` |
 | `src/pdfbook/qa/checks_visual.py` | qa | SSIM/pixel-diff originale↔output | 150 | pianificato (Fase 0) | `tests/unit/test_checks_visual.py` |
 | `src/pdfbook/ocr/vlm_adapter.py` | ocr | Sidecar OCR/VLM dietro `DocumentSource` | 150 | opzionale (Fase 4) | `tests/unit/test_ocr_adapter.py` |
 | `src/pdfbook/layout/aligner.py` | layout | Allineamento riga/blocco con soglie esplicite | 110 | **esistente (M7)** | `tests/unit/test_aligner.py` |

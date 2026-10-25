@@ -41,6 +41,30 @@ chiamante registra `split_failed` (bloccante), invece di pubblicare una pagina m
 **Costo noto**: il job materializza le pagine dell'intervallo per guardare avanti di una pagina.
 Per libri enormi è il primo punto da ottimizzare (streaming a finestra).
 
+## Tabelle (Fase 2.3)
+
+```python
+detect_tables(page) -> list[Table]        # bbox + righe di id-cella
+mark_tables(page) -> PageLayout           # celle marcate come TABLE_CELL
+```
+
+Riconoscimento **geometrico**, senza ricostruire la griglia vettoriale: righe consecutive
+con almeno 2 celle allineate sulle stesse colonne (tolleranza 4 pt), minimo 3 righe, celle
+su una sola riga di testo e corte (≤ 200 caratteri). Un salto verticale maggiore di 3×
+l'altezza di riga chiude la tabella, così due tabelle vicine non si fondono.
+
+Perché è conservativo: un layout a due colonne di **testo** ha blocchi alti e non allineati
+riga per riga, quindi non viene scambiato per una tabella.
+
+Nel rendering le celle:
+
+- non vengono mai spostate verticalmente (restano sulla loro baseline);
+- usano **solo** la larghezza della cella (nessuna estensione al margine pagina) e
+  `overflow_policy="shrink"`;
+- se il testo non entra nemmeno al corpo minimo producono `table_misaligned`, invece di
+  invadere la cella accanto o la riga sotto (l'invasione la vede comunque `checks_geometry`);
+- sono escluse dallo stitching (una cella non continua su un'altra pagina).
+
 ## Header, footer e numeri di pagina (Fase 2.4)
 
 ```python

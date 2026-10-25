@@ -59,6 +59,7 @@ class IssueKind(StrEnum):
     PARAGRAPH_STITCHED = "paragraph_stitched"
     SPLIT_FAILED = "split_failed"
     GLOSSARY_VIOLATION = "glossary_violation"
+    TABLE_MISALIGNED = "table_misaligned"
 
 
 @dataclass(frozen=True)

@@ -70,6 +70,7 @@ class BlockPainter:
         shift: float,
         *,
         key: str | None = None,
+        cell: bool = False,
     ) -> BlockResult:
         """Dipinge il blocco; ``key`` permette di usare una chiave diversa da ``block.id``."""
         result = BlockResult(y_end=block.bbox.y1 + shift)
@@ -78,8 +79,8 @@ class BlockPainter:
             return result
         target = block.primary_span.size
         bounds = Rect(block.bbox.x0, block.bbox.y0 + shift, block.bbox.x1, block.bbox.y1 + shift)
-        fit, text, shortened = self._fit_block(text, block, page, bounds, target)
-        self._record_fit(block, fit, target, shortened, page.number, result)
+        fit, text, shortened = self._fit_block(text, block, page, bounds, target, cell=cell)
+        self._record_fit(block, fit, target, shortened, page.number, result, cell=cell)
 
         baselines = baselines_for(block, fit.size, len(fit.lines), shift)
         alignments = alignments_for(block, page.width, len(fit.lines))
@@ -104,8 +105,13 @@ class BlockPainter:
         page: PageLayout,
         bounds: Rect,
         target: float,
+        *,
+        cell: bool = False,
     ) -> tuple[FitResult, str, bool]:
-        fit = self.fit(text, block, page, bounds, target)
+        fit = self.fit(
+            text, block, page, bounds, target,
+            overflow_policy="shrink" if cell else None,
+        )
         if fit.size >= target * self.retranslate_threshold or len(text) <= MIN_TEXT_TO_SHORTEN:
             return fit, text, False
         if self.shortener is None:
@@ -130,6 +136,7 @@ class BlockPainter:
         bounds: Rect,
         target: float,
         max_width: float | None = None,
+        overflow_policy: str | None = None,
     ) -> FitResult:
         """Fitting su un blocco (o su una colonna, con ``max_width`` esplicito)."""
         width = max_width if max_width is not None else self.usable_width(bounds, page)
@@ -142,7 +149,7 @@ class BlockPainter:
             bounds=bounds,
             obstacles=page.image_boxes,
             hyphenation=self.hyphenation,
-            overflow_policy=self.overflow_policy,
+            overflow_policy=overflow_policy or self.overflow_policy,
         )
 
     @staticmethod
@@ -192,6 +199,8 @@ class BlockPainter:
         shortened: bool,
         page_number: int,
         result: BlockResult,
+        *,
+        cell: bool = False,
     ) -> None:
         if fit.fits:
             result.perfect += 1
@@ -199,9 +208,13 @@ class BlockPainter:
             result.issues.append(
                 QAIssue(
                     page=page_number,
-                    kind=IssueKind.CLIPPED,
+                    kind=IssueKind.TABLE_MISALIGNED if cell else IssueKind.CLIPPED,
                     block=block.id,
-                    detail=f"{len(fit.lines)} righe > {block.line_count} previste",
+                    detail=(
+                        f"cella su {len(fit.lines)} righe (prevista {block.line_count})"
+                        if cell
+                        else f"{len(fit.lines)} righe > {block.line_count} previste"
+                    ),
                 )
             )
         if fit.reduced_compared_to(target):

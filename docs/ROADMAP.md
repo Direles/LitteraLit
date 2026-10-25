@@ -82,7 +82,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 |---|---|---|---|
 | 2.1 | **Paragraph stitching** fra pagine: rilevamento continuazione, traduzione unica, ridistribuzione sui due box | `layout/flow.py`, `app/page_plan.py` | ✅ **fatto** (14 test + 3 end-to-end) |
 | 2.2 | Issue `PARAGRAPH_STITCHED` (informativa) e `SPLIT_FAILED` (bloccante) | `domain/models.py`, `qa/report.py` | ✅ **fatto** (SPLIT_FAILED nel gate) |
-| 2.3 | Tabelle: rilevamento (regole geometriche o `pdfplumber`) e rendering cella per cella | `layout/tables.py`, `rendering/table_painter.py` | |
+| 2.3 | Tabelle: rilevamento geometrico delle celle e rendering vincolato alla cella | `layout/tables.py`, `rendering/painter.py` | ✅ **fatto** (11 test; issue `table_misaligned`) |
 | 2.4 | Header/footer/numero pagina: classificati e **non** tradotti | `layout/page_furniture.py`, `app/page_plan.py` | ✅ **fatto** (10 test) |
 | 2.5 | Ordine di lettura multi-colonna: colonne vere, non solo righe affiancate | `layout/segmentation.py` | |
 | 2.6 | Note a piè di pagina: riferimento apice ↔ nota, gruppo mantenuto insieme | `layout/notes.py` | dipende da 1.3 |

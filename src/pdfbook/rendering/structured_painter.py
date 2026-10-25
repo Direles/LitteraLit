@@ -32,6 +32,8 @@ class StructuredPainter(BlockPainter):
         page: PageLayout,
         translations: Mapping[str, str],
         shift: float,
+        *,
+        cell: bool = False,
     ) -> BlockResult:
         result = BlockResult(y_end=block.bbox.y1 + shift)
         index_of = {id(line): index for index, line in enumerate(block.lines)}

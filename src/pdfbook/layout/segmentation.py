@@ -74,9 +74,12 @@ def is_structured_block(block: TextBlock) -> bool:
 def classify_block(block: TextBlock, *, page_area: Rect | None = None) -> TextBlock:
     """Restituisce il blocco con il ``kind`` dedotto (nessuna mutazione dell'originale).
 
-    ``page_area`` è accettato per futuri criteri geometrici (titoli centrati, note a piè
-    di pagina) ma **non** è ancora usato: meglio un criterio assente che uno inventato.
+    Una classificazione **esplicita** (diversa da ``UNKNOWN``) vince sempre: chi ha già
+    riconosciuto una cella di tabella o un elemento di servizio non deve vedersela
+    sovrascrivere dalle euristiche.
     """
+    if block.kind is not BlockKind.UNKNOWN:
+        return block
     kind = _deduce_kind(block)
     if kind is block.kind:
         return block

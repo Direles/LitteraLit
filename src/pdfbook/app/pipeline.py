@@ -15,6 +15,7 @@ from pdfbook.config.settings import AppSettings
 from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, QAReport
 from pdfbook.layout.flow import split_translation
 from pdfbook.layout.hyphenation import Hyphenation
+from pdfbook.layout.tables import mark_tables
 from pdfbook.qa.checks_glossary import check_glossary
 from pdfbook.qa.report import gate, write_report
 from pdfbook.rendering.vector_renderer import VectorRenderer
@@ -89,6 +90,7 @@ class TranslationJob:
         first, last = self._range()
         self._offset = first
         pages = [self.runtime.source.page(index) for index in range(first, last + 1)]
+        pages = [mark_tables(page) for page in pages]
         plans = build_plans(pages, stitch=self.spec.settings.stitch_paragraphs)
         translator = self._translator()
         renderer = self._renderer(translator)

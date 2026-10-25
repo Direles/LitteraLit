@@ -11,7 +11,7 @@ import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, Rect
+from pdfbook.domain.models import BlockKind, IssueKind, PageLayout, QAIssue, Rect
 from pdfbook.domain.ports import FontResolverPort, ShortenerPort
 from pdfbook.layout.hyphenation import Hyphenation
 from pdfbook.layout.segmentation import classify_block, is_structured_block
@@ -91,11 +91,12 @@ class VectorRenderer:
         placed: list[tuple[Rect, float]] = []
         collected: list = []
         for block in blocks:
-            shift = shift_for(block.bbox, placed)
+            cell = block.kind is BlockKind.TABLE_CELL
+            shift = 0.0 if cell else shift_for(block.bbox, placed)
             if shift > SHIFT_TOLERANCE:
                 result.shifted += 1
             painter = self.structured if is_structured_block(block) else self.prose
-            painted = painter.paint(block, page, translations, shift)
+            painted = painter.paint(block, page, translations, shift, cell=cell)
             result.blocks += 1
             result.merge(painted)
             result.runs.extend(painted.runs)
