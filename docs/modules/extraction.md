@@ -78,6 +78,30 @@ eseguire nulla. Se è una scansione (maggioranza delle pagine campionate senza t
 Errori tradotti in `OcrError` con l'istruzione di installazione (Tesseract incluso), timeout a
 un'ora, e nessun effetto sul PDF originale. Con `PDFBOOK_OCR=off` il passo è disattivato.
 
+## OCR con VLM sidecar (Fase 4.3)
+
+```python
+parse_det(testo) -> DetParseResult(blocks, skipped, problems)
+to_page_layout(blocks, number=…, width=…, height=…) -> PageLayout
+VlmOcr(config, post_json, render_png).page(index, number=…) -> PageLayout
+```
+
+Il formato atteso dal modello è quello di Unlimited-OCR:
+
+```
+<|det|>title [40, 20, 560, 60]Capitolo primo
+<|det|>text [40, 80, 560, 300]Era una notte buia e tempestosa…
+```
+
+Coordinate in pixel o normalizzate 0–1 (si distingue dal massimo ≤ 1,5). Un blocco malformato
+viene **scartato e conteggiato**, non fa fallire la pagina; una risposta senza blocchi è un
+errore esplicito. `VlmOcr` non importa PyMuPDF: il PNG arriva da `render_png`, così la
+politica di rendering resta fuori dal layer OCR e i test non aprono PDF.
+
+Il client parla `/chat/completions` (SGLang, vLLM, LM Studio) e accetta anche contenuti a
+lista. Il collegamento come `DocumentSource` completa arriverà quando ci sarà un server
+verificabile in CI.
+
 ## Cosa NON fa e dove andrà
 
 - **Classificazione** (prosa, titolo, indice, colonna) → `layout/segmentation.py`.

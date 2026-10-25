@@ -85,6 +85,8 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/extraction/fitz_source.py` | extraction | Unico punto con `fitz`: `PdfPageSource.page(i)` | 60 | **esistente (M8)** | smoke test |
 | `src/pdfbook/extraction/scan_detect.py` | extraction | Pagine senza testo con immagini = scansioni, messaggio azionabile | 110 | **esistente (Fase 4.1)** | `tests/unit/test_scan_detect.py` |
 | `src/pdfbook/ocr/ocrmypdf_adapter.py` | ocr | OCR via ocrmypdf su copia temporanea, solo se la pagina è scansionata | 180 | **esistente (Fase 4.2)** | `tests/unit/test_ocrmypdf_adapter.py` |
+| `src/pdfbook/ocr/det_parser.py` | ocr | Parser del formato `<\|det\|>tipo [bbox]testo` dei VLM | 150 | **esistente (Fase 4.3)** | `tests/unit/test_vlm_ocr.py` |
+| `src/pdfbook/ocr/vlm_adapter.py` | ocr | Client VLM compatibile OpenAI: PNG → blocchi tipografici | 150 | **esistente (Fase 4.3)** | `tests/unit/test_vlm_ocr.py` |
 | `src/pdfbook/layout/segmentation.py` | layout | Righe visive, indici, classificazione blocchi | 150 | **esistente (M7)** | `tests/unit/test_segmentation.py` |
 | `src/pdfbook/layout/fitter.py` | layout | `wrap_text`, `fit_text`, budget caratteri; metriche iniettate | 200 | **esistente (M6)** | `tests/unit/test_fitter.py` |
 | `src/pdfbook/layout/hyphenation.py` | layout | Sillabazione per lingua (pyphen, degrado dichiarato) | 90 | **esistente (M6)** | `tests/unit/test_hyphenation.py` |
