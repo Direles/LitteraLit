@@ -8,13 +8,14 @@ orchestrazione pura.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pdfbook.domain.models import IssueKind, QAIssue, QAReport
 from pdfbook.layout.flow import split_translation
 from pdfbook.qa.checks_glossary import check_glossary
 from pdfbook.qa.checks_text import run_text_checks
 from pdfbook.translation.pipeline import TranslationPipeline
+from pdfbook.translation.terminology import Terminology
 
 from .page_plan import PagePlan, UnitTarget
 
@@ -28,6 +29,16 @@ class PageTranslator:
     translator: TranslationPipeline
     glossary: Sequence[str] = ()
     target_lang: str = "it"
+    terminology: Terminology = field(default_factory=Terminology)
+
+    def suggestions(self, *, limit: int = 40) -> list[str]:
+        """Termini ricorrenti da proporre come glossario (Fase 5.3), esclusi quelli già attivi."""
+        known = {term.strip().lower() for term in self.glossary if term.strip()}
+        return [
+            term.text
+            for term in self.terminology.candidates(limit=limit * 2)
+            if term.text.strip().lower() not in known
+        ][:limit]
 
     def translate(
         self,
@@ -42,6 +53,7 @@ class PageTranslator:
         if not plan.requests:
             return translations
         outcome = self.translator.translate(plan.requests, context=previous)
+        self.terminology.observe(plan.page.number, plan.requests.values())
         for issue in check_glossary(
             plan.page.number, plan.requests, outcome.translations, self.glossary
         ):

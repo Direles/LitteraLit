@@ -166,6 +166,13 @@ termini visti meno di `MIN_OCCURRENCES` volte.
 Le proposte **non entrano da sole** nella traduzione: sono un file da rivedere e passare a
 `PDFBOOK_GLOSSARY`. Un falso positivo qui costa una traduzione sbagliata per tutto il libro.
 
+Il job le espone in `JobResult.glossary_suggestions` (i termini già in glossario sono
+esclusi) e la CLI ne stampa i primi dodici a fine traduzione:
+
+```
+Glossario suggerito (termini ricorrenti, da rivedere): Kent Beck, Extreme Programming, …
+```
+
 ## Esempio d'uso
 
 ```python

@@ -143,6 +143,8 @@ def _translate(args: argparse.Namespace) -> int:
     print(f"Pagine: {result.pages} | blocchi: {result.blocks} | issue: {len(result.report.issues)}")
     if result.resumed_pages:
         print(f"Ripresa: {result.resumed_pages} pagine già tradotte riutilizzate dalla cache")
+    if result.glossary_suggestions:
+        print("Glossario suggerito (termini ricorrenti, da rivedere): " + ", ".join(result.glossary_suggestions[:12]))
     tokens = result.summary.get("tokens_in", 0) + result.summary.get("tokens_out", 0)
     if tokens:
         cost = result.summary.get("cost_usd_micro", 0) / 1_000_000

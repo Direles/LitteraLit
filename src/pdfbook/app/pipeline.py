@@ -69,6 +69,7 @@ class JobResult:
     blocks: int = 0
     resumed_pages: int = 0
     summary: dict[str, int] = field(default_factory=dict)
+    glossary_suggestions: list[str] = field(default_factory=list)
 
     def violations(self) -> list[str]:
         """Violazioni del gate di pubblicazione (vuoto = accettabile)."""
@@ -89,9 +90,7 @@ class TranslationJob:
         """Traduce le pagine richieste, salva il PDF e il report QA."""
         first, last = self._range()
         self._offset = first
-        pages = [
-            mark_tables(self.runtime.source.page(index)) for index in range(first, last + 1)
-        ]
+        pages = [mark_tables(self.runtime.source.page(i)) for i in range(first, last + 1)]
         plans = build_plans(
             pages,
             stitch=self.spec.settings.stitch_paragraphs,
@@ -124,6 +123,7 @@ class TranslationJob:
             blocks=counters["blocks"],
             resumed_pages=resumed_pages,
             summary=dict(counters),
+            glossary_suggestions=page_translator.suggestions(),
         )
         log.info(
             "job completato: %s pagine, %s blocchi, %s issue",
