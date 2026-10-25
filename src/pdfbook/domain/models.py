@@ -67,6 +67,8 @@ class IssueKind(StrEnum):
     WRONG_LANGUAGE = "wrong_language"
     SCAN_PAGE = "scan_page"
     UNSUPPORTED_SCRIPT = "unsupported_script"
+    ROUNDTRIP_LOSS = "roundtrip_loss"
+    SPECIAL_CHAR_LEAK = "special_char_leak"
 
 
 @dataclass(frozen=True)

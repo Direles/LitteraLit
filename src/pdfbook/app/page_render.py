@@ -12,6 +12,7 @@ from pdfbook.extraction.scan_detect import is_scanned_page
 from pdfbook.layout.styles import strip_markup
 from pdfbook.layout.writing_system import text_blocks_outside
 from pdfbook.qa.checks_glyphs import check_page_glyphs
+from pdfbook.qa.checks_roundtrip import check_roundtrip
 from pdfbook.rendering.vector_renderer import VectorRenderer
 
 from .visual_qa import check_after_render, snapshot
@@ -60,6 +61,10 @@ def render_and_check(
         report, page, before, rendered, canvas, dpi=settings.visual_qa_dpi
     )
     for issue in check_page_glyphs(
+        page.number, [strip_markup(value) for value in translations.values()], canvas.text()
+    ):
+        report.add(issue)
+    for issue in check_roundtrip(
         page.number, [strip_markup(value) for value in translations.values()], canvas.text()
     ):
         report.add(issue)

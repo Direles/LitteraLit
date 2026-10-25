@@ -5,6 +5,7 @@
     "clipped": 2,
     "font_reduced": 4,
     "repetition": 6,
+    "special_char_leak": 2,
     "wrong_language": 2
   },
   "summary": {

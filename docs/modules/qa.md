@@ -92,6 +92,23 @@ cortissime.
 | Pipeline con canvas che disegna `—` come `·` | `glyph_missing` → gate **FAIL** |
 | Output nuovo (M8+M9+M11, 2 pagine) | 0 issue, gate **PASS** (nessun falso positivo) |
 
+## Round-trip del testo e caratteri speciali (Fase 1.5)
+
+```python
+roundtrip_ratio(attesi, estratto) -> float            # 1.0 = tutto ritrovato
+special_chars(estratto) -> Counter                    # nbsp, soft_hyphen
+check_roundtrip(page, attesi, estratto) -> list[QAIssue]
+```
+
+Dopo ogni pagina si rilegge ci\xf2 che \xe8 stato appena scritto e lo si confronta con i testi
+tradotti: se manca pi\xf9 dello 0,1% dei caratteri si registra `roundtrip_loss`; se compaiono
+pi\xf9 di 3 NBSP/soft hyphen (difetto §11.7/1 di PyMuPDF) si registra `special_char_leak`.
+Entrambe sono **informative**: il gate resta sui quattro difetti che perdono contenuto.
+
+La verifica ha gi\xe0 trovato il difetto sul libro sintetico dei golden (`special_char_leak: 2`):
+la riscrittura del CMap ToUnicode con `fontTools` resta un intervento opzionale, ora che il
+difetto \xe8 misurato a ogni run invece che scoperto a mano.
+
 ## Controllo visivo (Fase 0)
 
 ```python
