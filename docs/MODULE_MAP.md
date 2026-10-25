@@ -132,7 +132,7 @@ legacy/              codice Gen 1 congelato
 | `tools/modularity_check.py` | tool | Enforcement R1/R2/R3/R5/R8/R11/R12/R13 | 300 | **esistente** | — (eseguito in CI) |
 | `tools/launch.py` | tool | Avvio guidato: venv, installazione, GUI/CLI per Windows/macOS/Linux | 140 | **esistente** | `tests/unit/test_launch_tool.py` |
 | `tools/check_report.py` | tool | Modello del report e stampa (separato per rispettare R1) | 80 | **esistente** | usato da `modularity_check` |
-| `tests/integration/` | test | Pipeline end-to-end su PDF sintetici generati al volo (nessun binario nel repo) | — | **esistente (Fase 0)** | eseguiti in CI |
+| `tests/integration/` | test | Pipeline end-to-end su PDF sintetici generati al volo (nessun binario nel repo); carico 500 pagine | — | **esistente (Fase 0/3.7)** | eseguiti in CI |
 | `tests/golden/` | test | Baseline dei contatori per il confronto anti-regressione | — | **esistente (Fase 0)** | `tests/integration/test_golden.py` |
 
 Aggiornare questa tabella è obbligatorio in ogni commit che aggiunge o sposta un modulo (R10).

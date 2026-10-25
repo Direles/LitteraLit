@@ -101,7 +101,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 3.4 | Tassonomia errori utente: codici di uscita stabili e messaggi con il rimedio | `app/errors.py`, `cli.py`, `gui/app.py` | ✅ **fatto** (8 test) |
 | 3.5 | Cache: TTL/versione, `pdfbook cache`, export TM per documento | `translation/cache.py`, `cli.py` | **fatto**: timestamp per voce, `pdfbook cache [--prune --max-age --max-entries]`; export TM ancora da fare |
 | 3.6 | Log strutturato su file con rotazione; nessun `print` in produzione | `config/logging.py` | |
-| 3.7 | Test di robustezza: 500 pagine sintetiche, 429 indotti, interruzione a metà | `tests/integration/` | |
+| 3.7 | Test di robustezza: 500 pagine sintetiche, 429 indotti, interruzione a metà | `tests/integration/` | **fatto**: `test_stress.py` (500 pagine, workers=4, ripresa a costo zero); 429 coperto da `test_pricing_ratelimit` |
 
 **Accettazione**: interruzione forzata → ripresa senza duplicati; run da 500 pagine con zero eccezioni non gestite sotto errori indotti.
 
