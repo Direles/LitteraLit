@@ -32,7 +32,21 @@ Traduce libri tecnici in PDF **conservando il layout**: redazione vettoriale del
 
 ## Avvio rapido
 
-### Doppio clic (nessuna installazione manuale)
+### Binari pronti (nessun Python richiesto)
+
+Scarica dalla [pagina delle release](https://github.com/Direles/LitteraLit/releases/latest):
+
+| Sistema | File | Cosa contiene |
+|---|---|---|
+| Windows | `LitteraLit-windows-latest.zip` | `pdfbook/pdfbook.exe` (CLI) e `pdfbook-gui/pdfbook-gui.exe` |
+| macOS | `LitteraLit-macOS.tar.gz` | idem, senza estensione |
+| Linux | `LitteraLit-Linux.tar.gz` | idem |
+
+I binari **non sono firmati**: Windows mostra SmartScreen (*Ulteriori informazioni → Esegui
+comunque*), macOS chiede di autorizzare l'app (tasto destro → *Apri*). Dettagli in
+[`packaging/README.md`](packaging/README.md).
+
+### Doppio clic (dai sorgenti, nessuna installazione manuale)
 
 | Sistema | File da aprire |
 |---|---|
