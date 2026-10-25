@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pdfbook.domain.models import IssueKind, QAIssue, QAReport
 from pdfbook.layout.flow import split_translation
 from pdfbook.qa.checks_glossary import check_glossary
+from pdfbook.qa.checks_text import run_text_checks
 from pdfbook.translation.pipeline import TranslationPipeline
 
 from .page_plan import PagePlan, UnitTarget
@@ -26,6 +27,7 @@ class PageTranslator:
 
     translator: TranslationPipeline
     glossary: Sequence[str] = ()
+    target_lang: str = "it"
 
     def translate(
         self,
@@ -42,6 +44,10 @@ class PageTranslator:
         outcome = self.translator.translate(plan.requests, context=previous)
         for issue in check_glossary(
             plan.page.number, plan.requests, outcome.translations, self.glossary
+        ):
+            report.add(issue)
+        for issue in run_text_checks(
+            plan.page.number, plan.requests, outcome.translations, expected_lang=self.target_lang
         ):
             report.add(issue)
         for unit_key, value in outcome.translations.items():

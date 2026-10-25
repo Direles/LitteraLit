@@ -62,6 +62,27 @@ sui difetti che perdono contenuto.
 Nessuna dipendenza aggiunta: un falso positivo qui costa più di un falso negativo, quindi
 niente fuzzy matching.
 
+## Qualità del testo (Fase 5.4)
+
+```python
+check_length_ratio(page, originali, traduzioni) -> list[QAIssue]
+check_repetitions(page, traduzioni) -> list[QAIssue]
+check_language(page, traduzioni, expected="it") -> list[QAIssue]
+run_text_checks(page, originali, traduzioni, expected_lang=...) -> list[QAIssue]
+```
+
+| Controllo | Segnale | Soglia |
+|---|---|---|
+| `length_ratio` | traduzione molto più corta/lunga dell'originale | 0,45 – 2,4 su unità ≥ 40 caratteri |
+| `repetition` | stesso shingle di 7 parole ripetuto | ≥ 3 volte, max 3 issue per pagina |
+| `wrong_language` | lingua dominante diversa da quella attesa | richiede ≥ 20 parole |
+
+Tutte e tre sono **informative** e non entrano nel gate. La lingua si riconosce con un
+punteggio di stopword per `it/en/fr/de/es` (nessuna dipendenza): se la lingua attesa non è
+fra queste, o se il punteggio non è strettamente maggiore, non si segnala nulla. Le soglie
+sono larghe di proposito: l'italiano è più lungo dell'inglese e i dialoghi hanno frasi
+cortissime.
+
 ## Verifica sui difetti noti del progetto
 
 | Caso | Risultato |

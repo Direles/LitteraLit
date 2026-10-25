@@ -62,6 +62,9 @@ class IssueKind(StrEnum):
     GLOSSARY_VIOLATION = "glossary_violation"
     TABLE_MISALIGNED = "table_misaligned"
     STYLE_FLATTENED = "style_flattened"
+    LENGTH_RATIO = "length_ratio"
+    REPETITION = "repetition"
+    WRONG_LANGUAGE = "wrong_language"
 
 
 @dataclass(frozen=True)

@@ -100,7 +100,7 @@ class TranslationJob:
         )
         translator = self._translator()
         renderer = self._renderer(translator)
-        page_translator = PageTranslator(translator, self.spec.settings.glossary)
+        page_translator = PageTranslator(translator, self.spec.settings.glossary, self.spec.settings.target_lang)
         report = QAReport()
         counters = {"blocks": 0, "perfect": 0, "overflow_shifted": 0, "stitched": 0}
         journal = self._start_journal(first, last)

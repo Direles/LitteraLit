@@ -48,6 +48,8 @@ class GoldenTest(unittest.TestCase):
         self.assertEqual(result.blocks, self.baseline["blocks"])
 
     def test_issue_kinds_match_baseline(self):
+        # Il provider finto non traduce davvero (prefissa "IT "): wrong_language e repetition
+        # sono quindi attese e fanno parte della fotografia, non sono un difetto del test.
         result = self.run_fixture()
         kinds = dict(sorted(Counter(issue.kind.value for issue in result.report.issues).items()))
         self.assertEqual(kinds, self.baseline["issue_kinds"])
