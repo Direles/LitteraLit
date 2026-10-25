@@ -142,7 +142,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 6.1 | GUI: anteprima prima/dopo con diff, ispettore issue per pagina, resume, drag & drop, ETA, annulla | oggi la GUI è funzionale ma "cieca" sull'output |
 | 6.2 | CLI: `pdfbook qa`, `report --html`, `batch` su più file | | **parziale**: `pdfbook qa` e `pdfbook report` (HTML statico); `batch` ancora da fare |
 | 6.3 | Packaging multi-OS in CI (PyInstaller matrix), release firmate Windows, AppImage Linux | oggi c'è solo il lanciatore |
-| 6.4 | Guida utente con screenshot, troubleshooting, FAQ, video breve | docs/ |
+| 6.4 | Guida utente con screenshot, troubleshooting, FAQ, video breve | docs/ | **parziale**: `docs/GUIDA.md` (installazione, primo libro, report, problemi frequenti); screenshot e video ancora da fare |
 | 6.5 | **Decisione licenza**: sostituire PyMuPDF (pypdfium2 + pdfminer/pdfplumber + pikepdf + ReportLab) oppure accettare AGPL | blocca la distribuzione commerciale |
 
 **Accettazione**: macchina pulita → doppio clic → traduzione → gate PASS, senza terminale; artefatti in GitHub Releases.

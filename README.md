@@ -50,11 +50,15 @@ $env:PDFBOOK_API_KEY = "..."     # oppure compila .env (mai committarlo)
 
 pdfbook gui                      # interfaccia desktop
 pdfbook translate libro.pdf libro-ITALIANO.pdf --pages 1-10
+pdfbook qa libro_ITALIANO_qa_report.json   # gate: 0 passa, 1 bloccante
+pdfbook report libro_ITALIANO_qa_report.json   # report HTML da leggere
 pdfbook doctor                    # configurazione redatta + eventuale report QA
 ```
 
 Configurazione tramite variabili `PDFBOOK_*` (vedi [`.env.example`](.env.example)).
 La chiave API **non viene mai salvata su disco**: vive nella sessione o nell'ambiente.
+
+Guida completa (installazione, primo libro, report, problemi frequenti): [`docs/GUIDA.md`](docs/GUIDA.md).
 
 ## Qualità misurata
 
