@@ -12,6 +12,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from pdfbook.domain.models import PageLayout, TextBlock
+from pdfbook.layout.columns import apply_reading_order
 from pdfbook.layout.flow import Continuation, detect_continuations, merged_text
 from pdfbook.layout.page_furniture import detect_furniture
 from pdfbook.layout.segmentation import is_structured_block
@@ -67,8 +68,11 @@ def build_plans(
     stitch: bool = True,
     furniture: bool = True,
     inline_styles: bool = False,
+    reading_order: bool = True,
 ) -> list[PagePlan]:
-    """Costruisce un piano per pagina: unisce continuazioni e isola header/footer."""
+    """Costruisce un piano per pagina: ordine di lettura, continuazioni, header/footer."""
+    if reading_order:
+        pages = [apply_reading_order(page) for page in pages]
     serving = detect_furniture(pages) if furniture else set()
     plans: list[PagePlan] = []
     for index, page in enumerate(pages):

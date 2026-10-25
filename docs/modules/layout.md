@@ -15,6 +15,7 @@
 | `aligner.py` | Allineamento `left`/`center`/`right` di righe e blocchi | Non sposta il testo: restituisce solo etichette |
 | `styles.py` | Grassetto/corsivo/apici inline: tag, parsing e a capo con metriche miste | Non disegna e non conosce i font concreti |
 | `scripts.py` | Riconosce apici e pedici da corpo e baseline; scala e spostamento | Non disegna e non modifica i blocchi |
+| `columns.py` | Ordine di lettura delle pagine a due colonne | Non sposta i blocchi: restituisce solo l'ordine |
 
 ## Stili inline (Fase 1.1/1.2)
 
@@ -41,6 +42,21 @@ usando `dominant_size` (pesato sui caratteri, non sugli span) e `RISE_RATIO = 0.
 Nel round-trip diventano `<sup>…</sup>` / `<sub>…</sub>`; in rendering il corpo è `SCRIPT_SCALE =
 0.68` e la baseline si sposta di `-0.33 × corpo` (apice) o `+0.16 × corpo` (pedice). Così il
 riferimento resta attaccato alla parola senza declassare il blocco a "corpo ridotto".
+
+## Ordine di lettura a colonne (Fase 2.5)
+
+Un PDF a due colonne esce spesso come blocchi **intercalati** (sinistra, destra, sinistra…):
+tradurre quell'ordine produce frasi che saltano da una colonna all'altra.
+
+`detect_columns` proietta gli intervalli orizzontali dei blocchi "stretti" (larghezza < 72% della
+pagina), unisce le sovrapposizioni e cerca **un solo** corridoio: se resta un gutter ≥ 10 pt con
+almeno 2 blocchi per lato, la pagina è a due colonne. `apply_reading_order` restituisce allora
+l'ordine *colonna sinistra dall'alto in basso, poi destra*, con i blocchi a tutta larghezza
+collocati prima o dopo la fascia delle colonne.
+
+**Regola di prudenza**: se un blocco a tutta larghezza cade dentro la fascia delle colonne, o se
+il gutter non è netto, l'ordine resta quello originale. Meglio non riordinare che inventare una
+lettura sbagliata; l'impostazione `PDFBOOK_READING_ORDER=0` disattiva del tutto il passo.
 
 ## Paragraph stitching (Fase 2)
 

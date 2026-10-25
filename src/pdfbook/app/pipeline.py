@@ -96,6 +96,7 @@ class TranslationJob:
             pages,
             stitch=self.spec.settings.stitch_paragraphs,
             inline_styles=self.spec.settings.inline_styles,
+            reading_order=self.spec.settings.reading_order,
         )
         translator = self._translator()
         renderer = self._renderer(translator)
