@@ -24,3 +24,30 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Lint
         run: python -m ruff check src tests tools
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Strumenti di build
+        run: |
+          python -m pip install --upgrade pip build twine
+      - name: Costruisci sdist e wheel
+        run: python -m build
+      - name: Verifica i metadati
+        run: python -m twine check dist/*
+      - name: Installa la wheel in un ambiente pulito
+        run: |
+          python -m venv /tmp/pkgtest
+          /tmp/pkgtest/bin/pip install dist/*.whl
+          /tmp/pkgtest/bin/pdfbook --version
+          /tmp/pkgtest/bin/pdfbook --help > /dev/null
+      - name: Conserva gli artefatti
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 14

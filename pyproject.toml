@@ -10,11 +10,30 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
+authors = [{ name = "Direles", email = "antoniomarino89@gmail.com" }]
+keywords = ["pdf", "translation", "layout", "typesetting", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: Italian",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: Linguistic",
+]
 dependencies = [
     "pymupdf>=1.24,<2",
     "pyphen>=0.17",
     "requests>=2.31",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Direles/LitteraLit"
+Issues = "https://github.com/Direles/LitteraLit/issues"
+Source = "https://github.com/Direles/LitteraLit"
 
 [project.optional-dependencies]
 gui = ["customtkinter>=5.2"]
