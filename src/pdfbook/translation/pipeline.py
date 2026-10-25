@@ -21,6 +21,7 @@ from threading import Lock
 
 from pdfbook.domain.models import TranslationSettings
 from pdfbook.translation.cache import TranslationCache
+from pdfbook.translation.chunking import PART_SEPARATOR, join_parts, split_long_unit
 from pdfbook.translation.json_repair import JsonRepairError, parse_json_object
 from pdfbook.translation.prompts import (
     build_shorten_payload,
@@ -109,7 +110,8 @@ class TranslationPipeline:
         before_in, before_out = self.tokens_in, self.tokens_out
         for chunk_result in self._run_chunks(chunks, context):
             translations.update(chunk_result)
-        missing = tuple(key for key in pending if key not in translations)
+        translations = self._join_parts(translations)
+        missing = self._missing_after_join(pending, translations)
         return TranslationOutcome(
             translations=translations,
             missing=missing,
@@ -181,14 +183,47 @@ class TranslationPipeline:
         chunk: dict[str, str] = {}
         size = 0
         for key, text in pending.items():
-            cost = len(text) + len(key) + 6
-            if chunk and size + cost > self.max_chars:
-                yield chunk
-                chunk, size = {}, 0
-            chunk[key] = text
-            size += cost
+            for part_key, part_text in split_long_unit(key, text, self.max_chars):
+                cost = len(part_text) + len(part_key) + 6
+                if chunk and size + cost > self.max_chars:
+                    yield chunk
+                    chunk, size = {}, 0
+                chunk[part_key] = part_text
+                size += cost
         if chunk:
             yield chunk
+
+    @staticmethod
+    def _join_parts(translations: dict[str, str]) -> dict[str, str]:
+        """Ricompone le unità spezzate in ``chiave#i`` (Fase 5.2)."""
+        bases: dict[str, int] = {}
+        for key in translations:
+            base, separator, index = key.partition(PART_SEPARATOR)
+            if separator and index.isdigit():
+                bases[base] = max(bases.get(base, 0), int(index) + 1)
+        if not bases:
+            return translations
+        joined = dict(translations)
+        for base, expected in bases.items():
+            value = join_parts(base, joined, expected=expected)
+            for key in [key for key in joined if key.partition(PART_SEPARATOR)[0] == base]:
+                joined.pop(key, None)
+            if value is not None:
+                joined[base] = value
+        return joined
+
+    @staticmethod
+    def _missing_after_join(
+        pending: Mapping[str, str], translations: Mapping[str, str]
+    ) -> tuple[str, ...]:
+        """Chiavi senza traduzione, con i pezzi riportati alla chiave base."""
+        missing: list[str] = []
+        for key in pending:
+            base, separator, index = key.partition(PART_SEPARATOR)
+            name = base if separator and index.isdigit() else key
+            if name not in translations and name not in missing:
+                missing.append(name)
+        return tuple(missing)
 
     def _translate_chunk(self, chunk: Mapping[str, str], context: str | None) -> dict[str, str]:
         system = build_translation_prompt(

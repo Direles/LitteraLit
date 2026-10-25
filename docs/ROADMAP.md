@@ -129,7 +129,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | # | Deliverable | File | Note |
 |---|---|---|---|
 | 5.1 | Glossario **vincolante**: verifica dei termini presenti nell'originale e assenti nella traduzione (issue informativa) | `qa/checks_glossary.py`, `app/pipeline.py` | ✅ **fatto** (8 test, senza dipendenze nuove) |
-| 5.2 | Chunking per frase (`stanza`/`spaCy`) e contesto scorrevole su 2 pagine | `translation/chunking.py` | coerenza migliore |
+| 5.2 | Chunking per frase (`stanza`/`spaCy`) e contesto scorrevole su 2 pagine | `translation/chunking.py` | **fatto senza dipendenze**: split per frase con abbreviazioni note, pezzi `chiave#i` riuniti dopo la traduzione; il contesto resta la pagina precedente |
 | 5.3 | Memoria terminologica per libro (termini ricorrenti → glossario automatico proposto) | `translation/terminology.py` | **fatto**: `JobResult.glossary_suggestions` + stampa in CLI |
 | 5.4 | Controlli di qualità del testo: ripetizioni, omissioni (rapporto lunghezze), lingua sbagliata (`langid`), LanguageTool come informativa | `qa/checks_text.py` | **fatto** (senza dipendenze, lingua via stopword); LanguageTool ancora da fare |
 | 5.5 | Profili di stile per libro (formale/informale, "non tradurre") | `config/settings.py` | **fatto**: `translation/style.py` + `PDFBOOK_STYLE` (fedele, scorrevole, accademico, narrativo) |

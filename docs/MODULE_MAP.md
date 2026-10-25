@@ -115,6 +115,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/translation/cache_prune.py` | translation | Potatura pura della TM per età e numero di voci | 90 | **esistente (Fase 3.5)** | `tests/unit/test_cache_prune.py` |
 | `src/pdfbook/translation/style.py` | translation | Profili di stile (fedele, scorrevole, accademico, narrativo) | 90 | **esistente (Fase 5.5)** | `tests/unit/test_style_profiles.py` |
 | `src/pdfbook/translation/terminology.py` | translation | Memoria terminologica per libro: propone il glossario | 140 | **esistente (Fase 5.3)** | `tests/unit/test_terminology.py` |
+| `src/pdfbook/translation/chunking.py` | translation | Chunking per frase e ricomposizione dei pezzi ``chiave#i`` | 140 | **esistente (Fase 5.2)** | `tests/unit/test_chunking.py` |
 | `src/pdfbook/translation/ratelimit.py` | translation | Intervallo minimo fra chiamate, thread-safe | 60 | **esistente (Fase 3.2)** | `tests/unit/test_pricing_ratelimit.py` |
 | `src/pdfbook/translation/prompts.py` | translation | Prompt di traduzione e compressione (glossario, contesto troncato) | 140 | **esistente (M4)** | `tests/unit/test_prompts.py` |
 | `src/pdfbook/translation/pipeline.py` | translation | Cache → chunking → provider → riparazione, con retry/backoff | 230 | **esistente (M4)** | `tests/unit/test_pipeline.py` |

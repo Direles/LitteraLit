@@ -110,6 +110,24 @@ pdfbook cache                       # statistiche: voci, dimensione
 pdfbook cache --prune --max-age 90 --max-entries 200000
 ```
 
+## Chunking per frase (Fase 5.2)
+
+```python
+split_sentences(text) -> list[str]               # abbreviazioni note, virgolette, ellissi
+split_long_unit(key, text, max_chars) -> [(chiave#i, pezzo)]
+split_parts(keys) / join_parts(base, parts, expected=n)
+```
+
+Il chunking per blocchi ha un difetto: un blocco molto lungo finisce in una richiesta enorme e
+i modelli iniziano a troncare o a saltare chiavi. Ora un'unità oltre `max_chars` viene spezzata
+sui **confini di frase** (e, se una frase è ancora troppo lunga, sui confini di parola); i
+pezzi viaggiano come `chiave#0`, `chiave#1` e la pipeline li ricompone dopo la traduzione.
+
+Garanzie: nessun carattere perso, pezzi numerati e ricomposti in ordine, e se un pezzo manca
+la chiave base risulta **mancante** (mai una traduzione troncata presentata come completa).
+Niente spaCy: una dipendenza da centinaia di MB non vale una regex con una lista di
+abbreviazioni.
+
 ## `ratelimit.py` e `Completion` (Fase 3.2/3.3)
 
 ```python
