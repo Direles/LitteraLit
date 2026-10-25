@@ -4,7 +4,7 @@
 > Stato di partenza: M1–M11 chiusi, P0.5 chiuso, **316 test**, gate di struttura a 0 errori, CI verde.
 > Stato attuale: **548 test**, 128 file, `modularity_check --strict` a 0 errori/0 warning, CI verde.
 > Chiusi: 1.1, 1.2, 1.3, 2.1–2.6, 3.1–3.5, 3.7, 4.1 (riconoscimento scansioni), 5.1, 5.3–5.5, 6.2 (qa/report).
-> Bloccati da binari esterni: 1.4 (font bundle), 4.2/4.3 (OCR).
+> Bloccati da binari esterni: 4.2/4.3 (OCR). Font bundle: registro e cascata fatti, i binari si scaricano a parte.
 > Questo piano definisce *cosa* manca, *in che ordine*, *come si misura* che sia servito.
 
 ---
@@ -69,7 +69,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 1.1 | Estrazione **per run tipografico** (`rawdict`/`get_texttrace`): bold, italic, colore e corpo per run, non solo per blocco | `extraction/pdf_extractor.py`, `domain/models.py` (`TextRun` semantico) | **fatto**: round-trip a marcatori (`layout/styles.py`), vedi §11.6 |
 | 1.2 | Rendering multi-run: una riga può avere più font/colori; corsivo e grassetto conservati | `rendering/runs.py`, `painter.py` | **fatto**: `rendering/styled.py`, fallback `style_flattened` |
 | 1.3 | Apici/apici di nota: shift di baseline e corpo ridotto, senza declassare il blocco | `rendering/painter.py`, `layout/fitter.py` | **fatto**: `layout/scripts.py` + tag `<sup>`/`<sub>` |
-| 1.4 | Font bundle liberi (Inter, Source Serif, Noto Serif/Sans) + fallback deterministico, via `data/fonts/` | `fonts/platform_fonts.py` | rende stabili i golden e indipendenti dall'OS |
+| 1.4 | Font bundle liberi (Inter, Source Serif, Noto Serif/Sans) + fallback deterministico, via `assets/fonts/` | `fonts/bundled.py`, `tools/fetch_fonts.py` | **fatto**: registro + cascata (embedded → bundle → sistema → base-14); i binari si scaricano con `tools/fetch_fonts.py` |
 | 1.5 | **ToUnicode custom** con `fontTools`: elimina NBSP/soft-hyphen nel testo estratto | `rendering/fitz_canvas.py` | chiude §11.7/1 |
 | 1.6 | Sperimentazione `insert_htmlbox`/`Story` per giustificazione e sillabazione CSS, dietro flag, valutata con 0.1 | `rendering/flow_renderer.py` | decisione go/no-go con numeri |
 

@@ -20,6 +20,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
 
+from .bundled import BundledFonts, bundle_family_for
 from .platform_fonts import classify, resolve_path
 
 __all__ = [
@@ -61,6 +62,7 @@ class ResolverStats:
 
     embedded_reused: int = 0
     fuzzy_reused: int = 0
+    bundle_used: int = 0
     system_fallback: int = 0
     base14_fallback: int = 0
 
@@ -68,6 +70,7 @@ class ResolverStats:
         return {
             "embedded_reused": self.embedded_reused,
             "fuzzy_reused": self.fuzzy_reused,
+            "bundle_used": self.bundle_used,
             "system_fallback": self.system_fallback,
             "base14_fallback": self.base14_fallback,
         }
@@ -112,6 +115,7 @@ class FontResolver:
         platform: str | None = None,
         exists: Callable[[str], bool] | None = None,
         base14_name: str = "helv",
+        bundle: BundledFonts | None = None,
     ) -> None:
         self.source = source
         self.font_factory = font_factory
@@ -119,6 +123,7 @@ class FontResolver:
         self.platform = platform
         self.exists = exists
         self.base14_name = base14_name
+        self.bundle = bundle
         self.stats = ResolverStats()
         self._embedded: dict[str, bytes] = {}
         self._cache: dict[str, Any] = {}
@@ -141,6 +146,8 @@ class FontResolver:
             self.stats.embedded_reused += 1
         elif origin == "fuzzy_reused":
             self.stats.fuzzy_reused += 1
+        elif origin == "bundle_used":
+            self.stats.bundle_used += 1
         elif origin == "system_fallback":
             self.stats.system_fallback += 1
         else:
@@ -163,6 +170,9 @@ class FontResolver:
             font = self._make(buffer=embedded)
             if font is not None and self._coverage_ok(font):
                 return font, "embedded_reused" if base in self._embedded else "fuzzy_reused"
+        font = self._bundle_font(pdf_font_name)
+        if font is not None:
+            return font, "bundle_used"
         font = self._system_font(pdf_font_name)
         if font is not None:
             return font, "system_fallback"
@@ -212,6 +222,22 @@ class FontResolver:
             return all(font.has_glyph(ord(char)) > 0 for char in self.test_chars)
         except Exception:  # noqa: BLE001 - font che non espone has_glyph: prudenza
             return False
+
+    def _bundle_font(self, pdf_font_name: str) -> Any | None:
+        """Font del bundle (se installato) compatibile con il nome PDF."""
+        if self.bundle is None:
+            return None
+        family = bundle_family_for(pdf_font_name, self.bundle)
+        if family is None:
+            return None
+        _family_class, bold, italic = classify(pdf_font_name)
+        path = self.bundle.path_for(family, bold, italic)
+        if not path:
+            return None
+        font = self._make(path=path)
+        if font is None or not self._coverage_ok(font):
+            return None
+        return font
 
     def _system_font(self, pdf_font_name: str) -> Any | None:
         family, bold, italic = classify(pdf_font_name)

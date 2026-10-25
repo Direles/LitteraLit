@@ -16,6 +16,7 @@ from typing import Any
 
 from pdfbook.config.settings import AppSettings
 from pdfbook.extraction.fitz_source import PdfPageSource
+from pdfbook.fonts.bundled import BundledFonts
 from pdfbook.fonts.fitz_adapter import PdfFontSource, make_fitz_font
 from pdfbook.fonts.resolver import FontResolver
 from pdfbook.rendering.fitz_canvas import FitzCanvas
@@ -49,6 +50,7 @@ def build_runtime(input_pdf: str | os.PathLike[str], settings: AppSettings) -> R
         font_source,
         font_factory=make_fitz_font,
         target_lang=settings.target_lang,
+        bundle=BundledFonts.discover(),
     )
     provider = create_provider(settings.translation_settings(), settings.api_key)
     cache = TranslationCache.for_settings(settings.cache_path, settings.translation_settings())
@@ -74,6 +76,7 @@ def build_runtime(input_pdf: str | os.PathLike[str], settings: AppSettings) -> R
         stats=lambda: {
             "embedded_fonts_reused": resolver.stats.embedded_reused + resolver.stats.fuzzy_reused,
             "system_fonts_used": resolver.stats.system_fallback,
+            "bundle_fonts_used": resolver.stats.bundle_used,
             "base14_fallback": resolver.stats.base14_fallback,
         },
     )

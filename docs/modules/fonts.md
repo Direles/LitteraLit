@@ -18,22 +18,46 @@
 |---|---|---|---|
 | 1 | Font **embedded** omonimo | il buffer copre tutti i caratteri test della lingua | `embedded_reused` |
 | 2 | Font **embedded simile** | stessa famiglia normalizzata, stile compatibile (punteggio bold/italic/narrow) | `fuzzy_reused` |
-| 3 | Font di **sistema** | primo file esistente per famiglia/stile | `system_fallback` |
-| 4 | Base-14 (`helv`) | nessun font disponibile | `base14_fallback` ⚠ |
+| 3 | Font del **bundle** | famiglia riconosciuta e glifi coperti (vedi §Font bundle) | `bundle_used` |
+| 4 | Font di **sistema** | primo file esistente per famiglia/stile | `system_fallback` |
+| 5 | Base-14 (`helv`) | nessun font disponibile | `base14_fallback` ⚠ |
 
 Il passaggio 1 è il motivo per cui il PDF tradotto può restare identico all'originale; il
-passaggio 3 è ciò che lo degrada. I contatori finiscono nel QA report: **un `base14_fallback`
+passaggio 4 è ciò che lo degrada. I contatori finiscono nel QA report: **un `base14_fallback`
 è un segnale di rischio** (il base-14 non copre em-dash e virgolette tipografiche — §14.3b
 dell'architettura).
+
+## Font bundle (Fase 1.4)
+
+Un libro tradotto con font arbitrari di sistema cambia metrica da macchina a macchina: i test
+golden non sono riproducibili e il PDF esce diverso per ogni utente. Il bundle è un insieme
+piccolo e dichiarato di famiglie OFL:
+
+| Famiglia | Ruolo |
+|---|---|
+| `inter` | sans-serif (Helvetica, Arial, Franklin) |
+| `source-serif` | serif da testo (Minion, Times, Georgia) |
+| `noto-serif` / `noto-sans` | copertura ampia |
+
+```python
+BundledFonts.discover(root=None)          # PDFBOOK_FONT_DIR o assets/fonts
+bundle.path_for(family, bold, italic)     # ripiego su regular della stessa famiglia
+bundle_family_for(pdf_font_name, bundle)  # MinionPro-Regular -> source-serif
+```
+
+I binari **non sono nel repository** (vedi [`assets/fonts/README.md`](../../assets/fonts/README.md)):
+si scaricano con `python tools/fetch_fonts.py`. Se la cartella è vuota la cascata funziona come
+prima e `bundle_fonts_used` resta a zero.
+
 
 ## Interfaccia
 
 ```python
-FontResolver(source, *, font_factory, target_lang="Italiano", platform=None, exists=None)
+FontResolver(source, *, font_factory, target_lang="Italiano", platform=None, exists=None, bundle=None)
 .resolve(pdf_font_name) -> font            # oggetto con text_length() e has_glyph()
 .text_length(text, pdf_font_name, size) -> float
 .covered(pdf_font_name) -> bool
-.stats -> ResolverStats(embedded_reused, fuzzy_reused, system_fallback, base14_fallback)
+.stats -> ResolverStats(embedded_reused, fuzzy_reused, bundle_used, system_fallback, base14_fallback)
 
 classify(pdf_font_name) -> (family, bold, italic)      # family ∈ sans|sans-narrow|serif|mono
 resolve_path(family, bold, italic, *, platform, exists) -> str | None

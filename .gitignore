@@ -10,6 +10,13 @@ conversione gemini/config.json
 *secrets*
 
 # ---------------------------------------------------------------
+# Font del bundle: binari OFL scaricati con tools/fetch_fonts.py
+# (il README e le licenze restano versionati)
+# ---------------------------------------------------------------
+assets/fonts/*.ttf
+assets/fonts/*.otf
+
+# ---------------------------------------------------------------
 # Contenuti proprietari: opere protette e loro derivati
 # (non pubblicabili: restano solo in locale)
 # ---------------------------------------------------------------
