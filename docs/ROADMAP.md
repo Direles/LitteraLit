@@ -111,7 +111,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 | # | Deliverable | File | Note |
 |---|---|---|---|
-| 4.1 | Layer `ocr/` con `OcrSource` che implementa `DocumentSource` | `src/pdfbook/ocr/` | architettura già prevista (§14) |
+| 4.1 | Layer `ocr/` con `OcrSource` che implementa `DocumentSource` | `src/pdfbook/ocr/` | **parziale**: riconoscimento scansioni (`extraction/scan_detect.py`) e messaggio azionabile; l'adapter `OcrSource` richiede i binari (4.2) |
 | 4.2 | Adapter **ocrmypdf + Tesseract** (CPU): text layer invisibile → la pipeline esistente funziona senza modifiche | `ocr/ocrmypdf_adapter.py` | primo passo economico |
 | 4.3 | Adapter **VLM sidecar** (SGLang OpenAI-compatible), parser `<\|det\|>tipo [bbox]` | `ocr/vlm_adapter.py`, `ocr/det_parser.py` | riusa il formato di Unlimited-OCR |
 | 4.4 | QA visivo anche per scansioni: `SCAN_FALLBACK`, confronto con OCR indipendente | `qa/checks_ocr.py` | l'OCR come giudice, non come estrattore |

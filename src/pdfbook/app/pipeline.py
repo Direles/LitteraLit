@@ -185,7 +185,7 @@ class TranslationJob:
     def _finalize(self, report: QAReport, counters: dict[str, int]) -> tuple[str, Path]:
         """Controlli finali, salvataggio del PDF e del report, pulizia del journal."""
         if counters["blocks"] == 0:
-            raise ValueError("Il PDF non contiene testo selezionabile: serve un PDF con testo nativo.")
+            raise ValueError("Il PDF non contiene testo: serve un OCR preliminare (ocrmypdf in.pdf out.pdf).")
         output = self._save()
         counters.update(self.runtime.stats())
         report_path = write_report(output, report, counters=counters)

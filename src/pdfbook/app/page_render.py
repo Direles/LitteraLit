@@ -7,7 +7,8 @@ controllo glifi. Tenerla fuori dal job evita che l'orchestrazione conosca i dett
 from __future__ import annotations
 
 from pdfbook.config.settings import AppSettings
-from pdfbook.domain.models import PageLayout, QAReport
+from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, QAReport
+from pdfbook.extraction.scan_detect import is_scanned_page
 from pdfbook.layout.styles import strip_markup
 from pdfbook.qa.checks_glyphs import check_page_glyphs
 from pdfbook.rendering.vector_renderer import VectorRenderer
@@ -33,6 +34,14 @@ def render_and_check(
 
     for issue in rendered.issues:
         report.add(issue)
+    if is_scanned_page(page):
+        report.add(
+            QAIssue(
+                page=page.number,
+                kind=IssueKind.SCAN_PAGE,
+                detail="pagina senza testo (probabile scansione): serve un OCR preliminare",
+            )
+        )
     counters["blocks"] += rendered.blocks
     counters["perfect"] += rendered.perfect
     counters["overflow_shifted"] += rendered.shifted

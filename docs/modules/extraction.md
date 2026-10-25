@@ -45,6 +45,20 @@ Sul PDF Patton, pagine 16 / 101 / 296: blocchi estratti **8/5/10**, identici ai 
 testuali del dizionario grezzo; caratteri 2.422 / 1.848 / 1.914 contro 2.390 / 1.823 /
 1.888 (la differenza è il `\n` che separa le righe dentro il blocco).
 
+## Pagine scansionate (Fase 4.1)
+
+```python
+has_text(page) -> bool                   # ≥ 20 caratteri non di spazi
+is_scanned_page(page) -> bool            # nessun testo utile ma almeno un'immagine
+scan_report(pages) -> ScanReport         # pages, with_text, scanned, all_scanned/mostly_scanned
+ScanReport.message() -> str              # messaggio azionabile per l'utente
+```
+
+Una pagina senza testo e con un'immagine è una scansione: `page_render` registra
+`scan_page` e il job, se non ha tradotto nulla, chiude con un errore che dice di fare un OCR
+preliminare (`ocrmypdf`). Il modulo **non fa OCR**: classifica soltanto, così l'adapter della
+Fase 4.2 sa su quali pagine intervenire.
+
 ## Cosa NON fa e dove andrà
 
 - **Classificazione** (prosa, titolo, indice, colonna) → `layout/segmentation.py`.

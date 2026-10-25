@@ -83,6 +83,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/app/errors.py` | app | Classificazione errori, codici di uscita e messaggi azionabili | 90 | **esistente (Fase 3.4)** | `tests/unit/test_errors.py` |
 | `src/pdfbook/extraction/pdf_extractor.py` | extraction | PDF dict → `PageLayout` (blocchi, righe, span, ostacoli) | 190 | **esistente (M8)** | `tests/unit/test_pdf_extractor.py` |
 | `src/pdfbook/extraction/fitz_source.py` | extraction | Unico punto con `fitz`: `PdfPageSource.page(i)` | 60 | **esistente (M8)** | smoke test |
+| `src/pdfbook/extraction/scan_detect.py` | extraction | Pagine senza testo con immagini = scansioni, messaggio azionabile | 110 | **esistente (Fase 4.1)** | `tests/unit/test_scan_detect.py` |
 | `src/pdfbook/layout/segmentation.py` | layout | Righe visive, indici, classificazione blocchi | 150 | **esistente (M7)** | `tests/unit/test_segmentation.py` |
 | `src/pdfbook/layout/fitter.py` | layout | `wrap_text`, `fit_text`, budget caratteri; metriche iniettate | 200 | **esistente (M6)** | `tests/unit/test_fitter.py` |
 | `src/pdfbook/layout/hyphenation.py` | layout | Sillabazione per lingua (pyphen, degrado dichiarato) | 90 | **esistente (M6)** | `tests/unit/test_hyphenation.py` |

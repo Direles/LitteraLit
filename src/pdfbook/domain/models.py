@@ -65,6 +65,7 @@ class IssueKind(StrEnum):
     LENGTH_RATIO = "length_ratio"
     REPETITION = "repetition"
     WRONG_LANGUAGE = "wrong_language"
+    SCAN_PAGE = "scan_page"
 
 
 @dataclass(frozen=True)
