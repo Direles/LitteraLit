@@ -90,6 +90,15 @@ PDFBOOK_MODEL=nome-esatto-del-modello
 PDFBOOK_API_KEY=
 ```
 
+I nomi cambiano a ogni modello caricato: non copiarli a mano, leggili.
+
+```bash
+pdfbook models        # elenca i modelli caricati sull'endpoint
+```
+
+Nella GUI c'è il pulsante *Leggi modelli caricati*, che popola la tendina. Guida completa:
+[`docs/local-llm.md`](local-llm.md).
+
 La qualità dipende dal modello: sotto i ~7 miliardi di parametri il formato JSON e i tag di
 stile tendono a rompersi.
 

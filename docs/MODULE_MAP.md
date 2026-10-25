@@ -126,6 +126,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/translation/providers/gemini.py` | translation | Adapter Gemini (chiave in header) | 90 | **esistente (M2)** | `tests/unit/test_providers.py` |
 | `src/pdfbook/translation/providers/anthropic.py` | translation | Adapter Claude (thinking-aware) | 80 | **esistente (M2)** | `tests/unit/test_providers.py` |
 | `src/pdfbook/translation/providers/registry.py` | translation | Nome provider → istanza configurata (unico punto con gli endpoint) | 100 | **esistente (M2)** | `tests/unit/test_providers.py` |
+| `src/pdfbook/translation/providers/discovery.py` | translation | Legge `/v1/models` (LM Studio, Ollama, vLLM): elenco dei modelli caricati | 150 | **esistente (Fase 6.1)** | `tests/unit/test_model_discovery.py` |
 | `src/pdfbook/rendering/canvas.py` | rendering | `TextRun` e contratto `PageCanvas` | 50 | **esistente (M9)** | `tests/unit/test_vector_renderer.py` |
 | `src/pdfbook/rendering/colors.py` | rendering | intero RGB → tupla 0..1 e hex | 30 | **esistente (M9)** | `tests/unit/test_vector_renderer.py` |
 | `src/pdfbook/rendering/runs.py` | rendering | Geometria pura: baseline, x, shift, altezze | 150 | **esistente (M9)** | `tests/unit/test_runs.py` |

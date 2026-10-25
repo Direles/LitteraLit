@@ -143,7 +143,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 | # | Deliverable | Note |
 |---|---|---|
-| 6.1 | GUI: anteprima prima/dopo con diff, ispettore issue per pagina, resume, drag & drop, ETA, annulla | oggi la GUI è funzionale ma "cieca" sull'output | **fatto**: presenter (ETA, riepilogo, digest), **anteprima testo a fronte**, **drag & drop** (extra `tkinterdnd2`), annulla, resume via `--resume`, report HTML |
+| 6.1 | GUI: anteprima prima/dopo con diff, ispettore issue per pagina, resume, drag & drop, ETA, annulla | oggi la GUI è funzionale ma "cieca" sull'output | **fatto**: presenter (ETA, riepilogo, digest), **anteprima testo a fronte**, **drag & drop** (extra `tkinterdnd2`), annulla, resume via `--resume`, report HTML, **lettura automatica dei modelli locali** (`pdfbook models` + pulsante GUI) |
 | 6.2 | CLI: `pdfbook qa`, `report --html`, `batch` su più file | | **parziale**: `pdfbook qa` e `pdfbook report` (HTML statico); `batch` ancora da fare |
 | 6.3 | Packaging multi-OS in CI (PyInstaller matrix), release firmate Windows, AppImage Linux | oggi c'è solo il lanciatore | **fatto in parte**: release con zip/tar.gz/**AppImage**, passi di firma `signtool`/`codesign`+`notarytool` pronti e attivi con i segreti; la firma richiede certificati dell'utente |
 | 6.4 | Guida utente con screenshot, troubleshooting, FAQ, video breve | docs/ | **parziale**: `docs/GUIDA.md` (installazione, primo libro, report, problemi frequenti); screenshot e video ancora da fare |

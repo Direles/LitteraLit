@@ -75,6 +75,7 @@ Configurazione tramite variabili `PDFBOOK_*` (vedi [`.env.example`](.env.example
 La chiave API **non viene mai salvata su disco**: vive nella sessione o nell'ambiente.
 
 Guida completa (installazione, primo libro, report, problemi frequenti): [`docs/GUIDA.md`](docs/GUIDA.md).
+Modelli locali (LM Studio, Ollama, lettura automatica dei modelli caricati): [`docs/local-llm.md`](docs/local-llm.md).
 
 ## Qualità misurata
 

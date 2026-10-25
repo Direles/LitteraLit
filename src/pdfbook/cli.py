@@ -62,6 +62,10 @@ def build_parser() -> argparse.ArgumentParser:
     qa = sub.add_parser("qa", help="verifica il gate di pubblicazione su un report")
     qa.add_argument("report")
 
+    models = sub.add_parser("models", help="elenca i modelli caricati su un endpoint locale")
+    models.add_argument("--base-url", default=None, help="default: PDFBOOK_BASE_URL o LM Studio")
+    models.add_argument("--json", action="store_true", help="output JSON invece che una lista")
+
     report = sub.add_parser("report", help="converte il report QA in HTML leggibile")
     report.add_argument("report")
     report.add_argument("--html", default=None, help="percorso del file HTML di uscita")
@@ -79,8 +83,10 @@ def main(argv: list[str] | None = None) -> int:
         return _doctor(args)
     if args.command == "cache":
         return _cache(args)
-    if args.command == "qa":
-        return _qa(args)
+    if args.command in ("qa", "report"):
+        return _report(args)
+    if args.command == "models":
+        return _models(args)
     if args.command == "report":
         return _report(args)
     if args.command == "gui":
@@ -136,14 +142,23 @@ def _translate(args: argparse.Namespace) -> int:
     logging.info("avvio job: %s", settings.redacted())
     runtime = build_runtime(spec.input_pdf, settings)
     started = time.perf_counter()
+
+    def progress(current: int, total: int, message: str) -> None:
+        print(f"[{current}/{total}] {message}")
+
     try:
-        result = TranslationJob(spec, runtime).run(progress=_progress)
+        result = TranslationJob(spec, runtime).run(progress=progress)
     except KeyboardInterrupt:
         print(describe(Cancelled("interrotto da tastiera")), file=sys.stderr)
         return EXIT_CODES["cancelled"]
     except Exception as exc:  # noqa: BLE001 - l'errore diventa un messaggio e un codice
         print(describe(exc), file=sys.stderr)
         return EXIT_CODES[classify(exc)]
+    return _print_result(result, started)
+
+
+def _print_result(result, started: float) -> int:
+    """Riepilogo di fine traduzione: metriche, file, gate. Exit code coerente con il gate."""
     metrics = from_summary(
         result.summary,
         pages=result.pages,
@@ -151,7 +166,6 @@ def _translate(args: argparse.Namespace) -> int:
         seconds=time.perf_counter() - started,
         issue_counts=Counter(issue.kind.value for issue in result.report.issues),
     )
-
     print(f"PDF: {result.output_pdf}")
     print(f"Report QA: {result.report_path}")
     print(format_metrics(metrics))
@@ -215,22 +229,47 @@ def _cache(args: argparse.Namespace) -> int:
     return 0
 
 
-def _qa(args: argparse.Namespace) -> int:
-    """Gate di pubblicazione su un report esistente: 0 se passa, 1 se bloccante."""
-    report = parse_report(args.report)
-    violations = gate(report)
-    print(f"Report: {len(report.issues)} issue | gate: {'PASS' if not violations else 'FAIL'}")
-    for violation in violations:
-        print(f"  - {violation}")
-    return 0 if not violations else 1
-
-
 def _report(args: argparse.Namespace) -> int:
-    """HTML del report QA, scritto accanto al report salvo ``--html``."""
+    """``report``: HTML accanto al report; ``qa``: gate con exit code 0/1."""
+    if args.command == "qa":
+        report = parse_report(args.report)
+        violations = gate(report)
+        print(f"Report: {len(report.issues)} issue | gate: {'PASS' if not violations else 'FAIL'}")
+        for violation in violations:
+            print(f"  - {violation}")
+        return 0 if not violations else 1
     from pdfbook.qa.html_report import write_html
 
     target = write_html(args.report, args.html)
     print(f"Report HTML: {target}")
+    return 0
+
+
+def _models(args: argparse.Namespace) -> int:
+    """Modelli caricati sull'endpoint locale: nessuna chiave stampata."""
+    import json
+
+    from pdfbook.translation.providers.base import ProviderError
+    from pdfbook.translation.providers.discovery import LOCAL_PRESETS, is_local, list_models
+
+    settings = load_settings(env_file=ENV_FILE)
+    base_url = args.base_url or settings.base_url.strip() or LOCAL_PRESETS["lm-studio"]
+    api_key = "" if is_local(base_url) else settings.api_key
+    try:
+        models = list_models(base_url, api_key=api_key)
+    except ProviderError as exc:
+        print(str(exc), file=sys.stderr)
+        return EXIT_CODES["provider"]
+    if args.json:
+        print(json.dumps([{"id": m.id, "owned_by": m.owned_by, "context": m.context_length} for m in models], indent=2))
+        return 0
+    if not models:
+        print(f"Nessun modello caricato su {base_url}")
+        print("In LM Studio: scheda Server → carica un modello → Start Server.")
+        return 0
+    print(f"Modelli su {base_url}:")
+    for model in models:
+        print(f"  {model.label}")
     return 0
 
 
@@ -249,10 +288,6 @@ def _configure_logging(level: str) -> None:
     if path is None:
         logging.basicConfig(level=getattr(logging, level.upper(), logging.INFO))
     logging.getLogger(__name__).debug("log su file: %s", path)
-
-
-def _progress(current: int, total: int, message: str) -> None:
-    print(f"[{current}/{total}] {message}")
 
 
 if __name__ == "__main__":
