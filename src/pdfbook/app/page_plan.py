@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pdfbook.domain.models import PageLayout, TextBlock
 from pdfbook.layout.columns import apply_reading_order
 from pdfbook.layout.flow import Continuation, detect_continuations, merged_text
+from pdfbook.layout.notes import mark_notes
 from pdfbook.layout.page_furniture import detect_furniture
 from pdfbook.layout.segmentation import is_structured_block
 from pdfbook.layout.styles import block_needs_tags, tag_block_text
@@ -69,10 +70,13 @@ def build_plans(
     furniture: bool = True,
     inline_styles: bool = False,
     reading_order: bool = True,
+    notes: bool = True,
 ) -> list[PagePlan]:
-    """Costruisce un piano per pagina: ordine di lettura, continuazioni, header/footer."""
+    """Costruisce un piano per pagina: ordine di lettura, note, continuazioni, header/footer."""
     if reading_order:
         pages = [apply_reading_order(page) for page in pages]
+    if notes:
+        pages = [mark_notes(page) for page in pages]
     serving = detect_furniture(pages) if furniture else set()
     plans: list[PagePlan] = []
     for index, page in enumerate(pages):

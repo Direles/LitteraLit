@@ -150,7 +150,12 @@ def _x_overlap(previous: TextBlock, following: TextBlock) -> float:
 
 
 def _edge_block(page: PageLayout, *, last: bool) -> TextBlock | None:
-    blocks = [block for block in page.blocks if block.text.strip()]
+    """Primo/ultimo blocco di **prosa**: le note a piè di pagina non cuciono le pagine."""
+    blocks = [
+        block
+        for block in page.blocks
+        if block.text.strip() and block.kind is not BlockKind.FOOTNOTE
+    ]
     if not blocks:
         return None
     picker = max if last else min

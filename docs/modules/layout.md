@@ -16,6 +16,7 @@
 | `styles.py` | Grassetto/corsivo/apici inline: tag, parsing e a capo con metriche miste | Non disegna e non conosce i font concreti |
 | `scripts.py` | Riconosce apici e pedici da corpo e baseline; scala e spostamento | Non disegna e non modifica i blocchi |
 | `columns.py` | Ordine di lettura delle pagine a due colonne | Non sposta i blocchi: restituisce solo l'ordine |
+| `notes.py` | Riconosce le note a piè di pagina e le marca `FOOTNOTE` | Non traduce e non sposta nulla |
 
 ## Stili inline (Fase 1.1/1.2)
 
@@ -57,6 +58,21 @@ collocati prima o dopo la fascia delle colonne.
 **Regola di prudenza**: se un blocco a tutta larghezza cade dentro la fascia delle colonne, o se
 il gutter non è netto, l'ordine resta quello originale. Meglio non riordinare che inventare una
 lettura sbagliata; l'impostazione `PDFBOOK_READING_ORDER=0` disattiva del tutto il passo.
+
+## Note a piè di pagina (Fase 2.6)
+
+Un blocco è una nota se ha **tutti e tre** i segnali: sta sotto il 72% dell'altezza, il suo corpo
+dominante è ≤ 95% di quello della pagina, e il testo inizia con un riferimento (`12`, `iv`, `*`,
+`†`…). `mark_notes` gli assegna `BlockKind.FOOTNOTE`; il riconoscimento è prudente perché un falso
+positivo taglierebbe fuori testo legittimo dalla cucitura dei paragrafi.
+
+L'effetto importante è nello stitching: `flow._edge_block` ignora le note, quindi
+
+* una nota in fondo alla pagina **non** viene unita al primo paragrafo della pagina dopo;
+* il riferimento a apice nel corpo (Fase 1.3) non viene confuso con testo che sfora.
+
+Il gruppo resta unito perché la nota vive nel suo blocco: viene tradotta una volta e ridisegnata
+nella sua area, senza spostamenti verticali.
 
 ## Paragraph stitching (Fase 2)
 

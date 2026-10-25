@@ -38,6 +38,7 @@ class BlockKind(StrEnum):
     LIST_ITEM = "list_item"
     TABLE_CELL = "table_cell"
     CAPTION = "caption"
+    FOOTNOTE = "footnote"
     FURNITURE = "furniture"
     UNKNOWN = "unknown"
 
