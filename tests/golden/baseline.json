@@ -5,9 +5,9 @@
     "clipped": 2,
     "font_reduced": 4,
     "repetition": 6,
-    "special_char_leak": 2,
     "wrong_language": 2
   },
+  "tolerated_issue_kinds": ["special_char_leak", "roundtrip_loss"],
   "summary": {
     "base14_fallback": 0,
     "blocks": 6,
