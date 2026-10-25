@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import threading
+import time
 from pathlib import Path
 from tkinter import filedialog, messagebox
 
@@ -16,9 +17,12 @@ import customtkinter as ctk
 
 from pdfbook.app import JobResult, JobSpec, TranslationJob, build_runtime
 from pdfbook.app.errors import describe
+from pdfbook.app.metrics import from_summary
 from pdfbook.config.settings import load_settings
+from pdfbook.qa.html_report import write_html
 
 from .config_panel import ConfigPanel
+from .presenter import ProgressTracker, digest_lines, summary_lines
 
 __all__ = ["TranslatorApp", "main"]
 
@@ -38,6 +42,8 @@ class TranslatorApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         self.panel = ConfigPanel(self, load_settings(env_file=".env"))
+        self.tracker = ProgressTracker()
+        self.started_at = 0.0
         self.panel.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=10)
 
         main = ctk.CTkFrame(self)
@@ -133,6 +139,8 @@ class TranslatorApp(ctk.CTk):
         )
         self.start_button.configure(state="disabled", text="Traduzione in corso...")
         self.progress.set(0.0)
+        self.tracker.begin(time.perf_counter(), 0)
+        self.started_at = time.perf_counter()
         self.log_box.delete("1.0", "end")
         threading.Thread(target=self._worker, args=(spec,), daemon=True).start()
 
@@ -149,20 +157,33 @@ class TranslatorApp(ctk.CTk):
     # ---------- callback UI ----------
 
     def _progress(self, current: int, total: int, message: str) -> None:
+        view = self.tracker.update(current, total, time.perf_counter())
+
         def update() -> None:
-            self.progress.set(current / total if total else 0.0)
-            self._log(message)
+            self.progress.set(view.percent)
+            self._log(f"{message} · {view.label()}")
         self.after(0, update)
 
     def _finished(self, result: JobResult) -> None:
         self.start_button.configure(state="normal", text="Avvia traduzione")
         self.progress.set(1.0)
-        self._log(f"Completato: {result.blocks} blocchi, {len(result.report.issues)} issue")
+        metrics = from_summary(
+            result.summary,
+            pages=result.pages,
+            blocks=result.blocks,
+            seconds=time.perf_counter() - self.started_at,
+        )
+        for line in summary_lines(result, metrics):
+            self._log(line)
         self._log(f"PDF: {result.output_pdf}")
         self._log(f"Report QA: {result.report_path}")
+        try:
+            self._log(f"Report leggibile: {write_html(result.report_path)}")
+        except OSError as exc:
+            self._log(f"Report HTML non scritto: {exc}")
+        for line in digest_lines(result.report):
+            self._log(line)
         violations = result.violations()
-        for violation in violations:
-            self._log(f"GATE: {violation}")
         if not violations:
             messagebox.showinfo("Traduzione completata", f"PDF salvato in:\n{result.output_pdf}")
 

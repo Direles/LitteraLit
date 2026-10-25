@@ -138,6 +138,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/qa/textnorm.py` | qa | Normalizzazione del testo estratto (NBSP, soft hyphen, punteggiatura) | 90 | **esistente (P0.5)** | `tests/unit/test_textnorm.py` |
 | `src/pdfbook/gui/app.py` | gui | Finestra, thread worker, progress, log | 220 | **esistente (M11)** | smoke manuale |
 | `src/pdfbook/gui/config_panel.py` | gui | Pannello provider/modello/lingua/glossario | 130 | **esistente (M11)** | smoke manuale |
+| `src/pdfbook/gui/presenter.py` | gui | ETA, digest issue per pagina, riepilogo run, coppie per l'anteprima | 150 | **esistente (Fase 6.1)** | `tests/unit/test_gui_presenter.py` |
 | `src/pdfbook/cli.py` | cli | Entrypoint argparse: `translate`, `doctor` | 160 | **esistente (M11)** | `tests/unit/test_cli.py` |
 | `src/pdfbook/ocr/client.py` | ocr | Client sidecar VLM per QA/scansioni | 120 | opzionale (§14) | `test_ocr_client.py` |
 | `tools/modularity_check.py` | tool | Enforcement R1/R2/R3/R5/R8/R11/R12/R13 | 300 | **esistente** | — (eseguito in CI) |
