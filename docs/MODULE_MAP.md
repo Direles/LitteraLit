@@ -72,7 +72,11 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/domain/ports.py` | domain | Protocol: `TranslatorPort`, `ShortenerPort`, `FontResolverPort`, `ProgressPort`, `DocumentSource` | 120 | **esistente** | — (solo tipi) |
 | `src/pdfbook/config/settings.py` | config | Impostazioni da env/`.env`, validazione, nessun segreto su disco | 160 | **esistente (M11)** | `tests/unit/test_settings.py` |
 | `src/pdfbook/app/runtime.py` | app | Costruzione dipendenze reali (PDF, provider, cache, font, canvas) | 110 | **esistente (M11)** | `tests/unit/test_app_pipeline.py` |
-| `src/pdfbook/app/pipeline.py` | app | Job di documento: pagine → batch → render → QA → salvataggio | 190 | **esistente (M11)** | `tests/unit/test_app_pipeline.py` |
+| `src/pdfbook/app/pipeline.py` | app | Job di documento: pagine → batch → render → QA → salvataggio | 330 | **esistente (M11/Fase 3)** | `tests/unit/test_app_pipeline.py` |
+| `src/pdfbook/app/page_translator.py` | app | Traduzione della pagina: unità, split delle continuazioni, glossario | 110 | **esistente (Fase 2/5)** | `tests/unit/test_app_pipeline.py` |
+| `src/pdfbook/app/checkpoints.py` | app | Fingerprint del lavoro, journal di avanzamento, salvataggio periodico della cache | 110 | **esistente (Fase 3.1)** | `tests/unit/test_journal.py` |
+| `src/pdfbook/app/journal.py` | app | Modello e I/O atomico del journal | 110 | **esistente (Fase 3.1)** | `tests/unit/test_journal.py` |
+| `src/pdfbook/app/errors.py` | app | Classificazione errori, codici di uscita e messaggi azionabili | 90 | **esistente (Fase 3.4)** | `tests/unit/test_errors.py` |
 | `src/pdfbook/extraction/pdf_extractor.py` | extraction | PDF dict → `PageLayout` (blocchi, righe, span, ostacoli) | 190 | **esistente (M8)** | `tests/unit/test_pdf_extractor.py` |
 | `src/pdfbook/extraction/fitz_source.py` | extraction | Unico punto con `fitz`: `PdfPageSource.page(i)` | 60 | **esistente (M8)** | smoke test |
 | `src/pdfbook/layout/segmentation.py` | layout | Righe visive, indici, classificazione blocchi | 150 | **esistente (M7)** | `tests/unit/test_segmentation.py` |

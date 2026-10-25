@@ -13,6 +13,7 @@ from pathlib import Path
 
 from pdfbook import __version__
 from pdfbook.app import JobSpec, TranslationJob, build_runtime
+from pdfbook.app.errors import EXIT_CODES, classify, describe
 from pdfbook.config.settings import LOG_LEVELS, load_settings, parse_glossary
 from pdfbook.qa.report import gate, parse_report
 
@@ -39,6 +40,9 @@ def build_parser() -> argparse.ArgumentParser:
     translate.add_argument("--missing-policy", choices=("skip", "keep"), default="skip")
     translate.add_argument("--overflow-policy", choices=("keep_size", "shrink"), default="keep_size")
     translate.add_argument("--log-level", choices=LOG_LEVELS, default=None)
+    translate.add_argument(
+        "--resume", action="store_true", help="riprendi il lavoro interrotto (journal + cache)"
+    )
 
     doctor = sub.add_parser("doctor", help="mostra la configurazione e verifica un report QA")
     doctor.add_argument("report", nargs="?", default=None)
@@ -59,7 +63,8 @@ def main(argv: list[str] | None = None) -> int:
     return 2
 
 
-def _translate(args: argparse.Namespace) -> int:
+def _settings_from_args(args: argparse.Namespace):
+    """Impostazioni da ambiente/`.env`, con gli argomenti della CLI come override."""
     settings = load_settings(env_file=ENV_FILE)
     overrides: dict[str, object] = {}
     if args.provider:
@@ -74,8 +79,11 @@ def _translate(args: argparse.Namespace) -> int:
         overrides["cache_path"] = Path(args.cache).expanduser()
     if args.log_level:
         overrides["log_level"] = args.log_level
-    if overrides:
-        settings = type(settings)(**{**settings.__dict__, **overrides})
+    return type(settings)(**{**settings.__dict__, **overrides}) if overrides else settings
+
+
+def _translate(args: argparse.Namespace) -> int:
+    settings = _settings_from_args(args)
     _configure_logging(settings.log_level)
 
     missing = settings.missing_required()
@@ -92,14 +100,21 @@ def _translate(args: argparse.Namespace) -> int:
         page_end=page_end,
         missing_policy=args.missing_policy,
         overflow_policy=args.overflow_policy,
+        resume=args.resume,
     )
     logging.info("avvio job: %s", settings.redacted())
     runtime = build_runtime(spec.input_pdf, settings)
-    result = TranslationJob(spec, runtime).run(progress=_progress)
+    try:
+        result = TranslationJob(spec, runtime).run(progress=_progress)
+    except Exception as exc:  # noqa: BLE001 - l'errore diventa un messaggio e un codice
+        print(describe(exc), file=sys.stderr)
+        return EXIT_CODES[classify(exc)]
 
     print(f"PDF: {result.output_pdf}")
     print(f"Report QA: {result.report_path}")
     print(f"Pagine: {result.pages} | blocchi: {result.blocks} | issue: {len(result.report.issues)}")
+    if result.resumed_pages:
+        print(f"Ripresa: {result.resumed_pages} pagine già tradotte riutilizzate dalla cache")
     violations = result.violations()
     for violation in violations:
         print(f"GATE: {violation}")

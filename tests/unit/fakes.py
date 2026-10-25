@@ -120,31 +120,26 @@ class FakeSource:
 
 
 class EchoProvider:
-    """Provider deterministico: prefissa il testo invece di tradurlo."""
+    """Provider deterministico: prefissa il testo invece di tradurlo.
+
+    Con ``keep`` limita le chiavi restituite, simulando una traduzione parziale.
+    """
 
     name = "echo"
 
-    def __init__(self, prefix="IT "):
+    def __init__(self, prefix="IT ", keep=None):
         self.prefix = prefix
+        self.keep = keep
         self.calls = 0
 
     def complete(self, system, user):
         self.calls += 1
         batch = json.loads(user)
-        return json.dumps({key: self.prefix + value for key, value in batch.items()}, ensure_ascii=False)
-
-
-class PartialProvider(EchoProvider):
-    """Restituisce solo le prime ``keep`` chiavi: simula un blocco non tradotto."""
-
-    def __init__(self, keep=1):
-        super().__init__()
-        self.keep = keep
-
-    def complete(self, system, user):
-        self.calls += 1
-        batch = dict(list(json.loads(user).items())[: self.keep])
-        return json.dumps(batch, ensure_ascii=False)
+        if self.keep is not None:
+            batch = dict(list(batch.items())[: self.keep])
+        return json.dumps(
+            {key: self.prefix + value for key, value in batch.items()}, ensure_ascii=False
+        )
 
 
 class FailingProvider:
@@ -170,6 +165,20 @@ class FixedProvider:
     def complete(self, system, user):
         self.calls += 1
         return json.dumps({key: self.text for key in json.loads(user)}, ensure_ascii=False)
+
+
+class FailOnSecondCall(EchoProvider):
+    """Riesce alla prima chiamata e fallisce dalla seconda (simula un crash a metà job)."""
+
+    def __init__(self):
+        super().__init__()
+        self.calls = 0
+
+    def complete(self, system, user):
+        self.calls += 1
+        if self.calls >= 2:
+            raise ProviderError("interruzione simulata")
+        return super().complete(system, user)
 
 
 def make_runtime(source, provider, cache_path: Path, *, save_calls=None):

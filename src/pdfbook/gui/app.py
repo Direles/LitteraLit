@@ -15,6 +15,7 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 
 from pdfbook.app import JobResult, JobSpec, TranslationJob, build_runtime
+from pdfbook.app.errors import describe
 from pdfbook.config.settings import load_settings
 
 from .config_panel import ConfigPanel
@@ -140,7 +141,7 @@ class TranslatorApp(ctk.CTk):
             runtime = build_runtime(spec.input_pdf, spec.settings)
             result = TranslationJob(spec, runtime).run(progress=self._progress)
         except Exception as exc:  # noqa: BLE001 - l'errore va mostrato, non propagato
-            message = str(exc)
+            message = describe(exc)
             self.after(0, lambda: self._failed(message))
             return
         self.after(0, lambda: self._finished(result))

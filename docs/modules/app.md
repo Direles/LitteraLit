@@ -78,6 +78,38 @@ verifica il gate — è il comando da usare in CI.
   con credenziali (difetto §11.1/1).
 - `import pdfbook.gui` non richiede `customtkinter`: serve solo `pdfbook.gui.app`.
 
+## `app/checkpoints.py` + `app/journal.py` — ripresa dopo un'interruzione (Fase 3.1)
+
+```python
+fingerprint(input_pdf, settings, page_start=..., page_end=..., ...) -> str
+start_journal(*, input_pdf, output_pdf, fingerprint_value, pages_total, resume) -> Journal
+checkpoint(journal, done, total, cache, every) -> None      # cache.save() + journal, ogni N pagine
+```
+
+Cosa garantisce e cosa **non** garantisce:
+
+| Garanzia | Come |
+|---|---|
+| Un crash non brucia le traduzioni già pagate | la cache viene salvata ogni `PDFBOOK_CHECKPOINT_EVERY` pagine (default 10) e all'ultima |
+| Non si riprende con una configurazione diversa | il fingerprint include input (dimensione+mtime), provider, modello, lingua, glossario, intervallo, politiche; con `--resume` una divergenza solleva `UsageError` |
+| L'avanzamento è visibile | `<output>.job.json` accanto al PDF, scritto atomicamente e rimosso a fine job |
+| **Non** si risparmia il rendering | il PDF viene ricostruito da zero: si risparmiano le chiamate API (dalla cache), non i secondi di layout |
+
+`--resume` quindi non riapre un PDF a metà: dice "riusa pure la cache, il journal conferma che è lo stesso lavoro".
+
+## `app/errors.py` — messaggi che dicono cosa fare (Fase 3.4)
+
+```python
+classify(error) -> "config" | "input" | "provider" | "layout"
+describe(error) -> str          # messaggio con il rimedio concreto
+EXIT_CODES = {ok:0, gate:1, config:2, input:3, provider:4, layout:5}
+```
+
+La CLI restituisce il codice corrispondente e stampa il rimedio (`.env`, percorso, chiave,
+limite di frequenza); la GUI mostra lo stesso messaggio. La causa originale resta nei log.
+Attenzione all'ordine dei controlli: `JsonRepairError` è anche un `ValueError`, quindi i tipi
+specifici vanno classificati prima.
+
 ## Cosa NON fanno
 
 - Nessuna logica di traduzione, fitting o disegno (vivono nei rispettivi layer).

@@ -23,10 +23,20 @@ from pdfbook.qa.report import gate, write_report
 from pdfbook.rendering.vector_renderer import PageRenderResult, VectorRenderer
 from pdfbook.translation.pipeline import TranslationOutcome, TranslationPipeline
 
+from .checkpoints import checkpoint, fingerprint, start_journal
+from .journal import Journal, load_journal, remove_journal
 from .page_plan import PagePlan, block_units, build_plans
+from .page_translator import PageTranslator
 from .runtime import Runtime
 
-__all__ = ["JobResult", "JobSpec", "TranslationJob", "block_units", "build_plans"]
+__all__ = [
+    "JobResult",
+    "JobSpec",
+    "TranslationJob",
+    "block_units",
+    "build_plans",
+    "load_journal",
+]
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +54,7 @@ class JobSpec:
     page_end: int | None = None
     missing_policy: str = "skip"
     overflow_policy: str = "keep_size"
+    resume: bool = False
 
 
 @dataclass
@@ -55,6 +66,7 @@ class JobResult:
     report: QAReport
     pages: int = 0
     blocks: int = 0
+    resumed_pages: int = 0
     summary: dict[str, int] = field(default_factory=dict)
 
     def violations(self) -> list[str]:
@@ -79,27 +91,24 @@ class TranslationJob:
         plans = build_plans(pages, stitch=self.spec.settings.stitch_paragraphs)
         translator = self._translator()
         renderer = self._renderer(translator)
+        page_translator = PageTranslator(translator, self.spec.settings.glossary)
         report = QAReport()
         counters = {"blocks": 0, "perfect": 0, "overflow_shifted": 0, "stitched": 0}
+        journal = self._start_journal(first, last)
+        resumed_pages = journal.pages_done if self.spec.resume else 0
         previous: str | None = None
         total = last - first + 1
         try:
             for done, plan in enumerate(plans, start=1):
-                page = plan.page
-                translations = self._translate_plan(plans, done - 1, translator, previous, report, counters)
+                translations = page_translator.translate(
+                    plans, done - 1, previous, report, counters
+                )
                 canvas = self.runtime.canvas_factory(first + done - 1)
-                before = self._snapshot(canvas)
-                rendered = renderer.render_page(canvas, page, translations)
-                self._merge(report, rendered, counters)
-                if before is not None:
-                    self._check_visual(report, page, before, rendered, canvas)
-                for issue in check_page_glyphs(
-                    page.number, list(translations.values()), canvas.text()
-                ):
-                    report.add(issue)
-                previous = self._page_text(page)
+                self._render(canvas, plan.page, renderer, translations, report, counters)
+                previous = self._page_text(plan.page)
+                self._checkpoint(journal, done, total)
                 if progress:
-                    progress(done, total, f"pagina {page.number}: {counters['blocks']} blocchi")
+                    progress(done, total, f"pagina {plan.page.number}: {counters['blocks']} blocchi")
             if counters["blocks"] == 0:
                 raise ValueError(
                     "Il PDF non contiene testo selezionabile: serve un PDF con testo nativo."
@@ -107,6 +116,7 @@ class TranslationJob:
             output = self._save()
             counters.update(self.runtime.stats())
             report_path = write_report(output, report, counters=counters)
+            remove_journal(output)
         finally:
             self.runtime.close()
         result = JobResult(
@@ -115,6 +125,7 @@ class TranslationJob:
             report=report,
             pages=total,
             blocks=counters["blocks"],
+            resumed_pages=resumed_pages,
             summary=dict(counters),
         )
         log.info(
@@ -122,6 +133,40 @@ class TranslationJob:
             result.pages, result.blocks, len(report.issues),
         )
         return result
+
+    def _render(self, canvas, page, renderer, translations, report, counters) -> None:
+        """Rendering + QA di una pagina (visivo, geometrico, glifi)."""
+        before = self._snapshot(canvas)
+        rendered = renderer.render_page(canvas, page, translations)
+        self._merge(report, rendered, counters)
+        if before is not None:
+            self._check_visual(report, page, before, rendered, canvas)
+        for issue in check_page_glyphs(page.number, list(translations.values()), canvas.text()):
+            report.add(issue)
+
+    def _start_journal(self, first: int, last: int) -> Journal:
+        """Apre o crea il journal, verificando la coerenza della configurazione."""
+        settings = self.spec.settings.translation_settings()
+        return start_journal(
+            input_pdf=self.spec.input_pdf,
+            output_pdf=self.spec.output_pdf,
+            fingerprint_value=fingerprint(
+                self.spec.input_pdf,
+                settings,
+                page_start=self.spec.page_start,
+                page_end=self.spec.page_end,
+                missing_policy=self.spec.missing_policy,
+                overflow_policy=self.spec.overflow_policy,
+            ),
+            pages_total=last - first + 1,
+            resume=self.spec.resume,
+        )
+
+    def _checkpoint(self, journal: Journal, done: int, total: int) -> None:
+        """Salva cache e journal ogni N pagine: un crash non brucia le traduzioni pagate."""
+        checkpoint(
+            journal, done, total, self.runtime.cache, self.spec.settings.checkpoint_every
+        )
 
     # ---------- passi ----------
 

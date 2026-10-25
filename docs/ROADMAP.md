@@ -95,10 +95,10 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 
 | # | Deliverable | File | Note |
 |---|---|---|---|
-| 3.1 | **Checkpoint/resume** per pagina: journal `job.json` con stato, hash e pagine completate; `--resume` | `app/journal.py`, `app/pipeline.py` | zero chiamate API duplicate |
+| 3.1 | **Checkpoint/resume**: journal con fingerprint, cache salvata ogni N pagine, `--resume` | `app/checkpoints.py`, `app/journal.py` | ✅ **fatto** (ripresa con 0 chiamate duplicate, verificata da test) |
 | 3.2 | Parallelismo controllato (N pagine) + rate limiter per provider + `Retry-After` | `translation/ratelimit.py`, `app/pipeline.py` | 3-5× velocità |
 | 3.3 | **Tracking costi/token** per pagina e per run, con `--max-cost` | `app/pipeline.py`, `qa/report.py` | visibilità economica |
-| 3.4 | Tassonomia errori utente (`AuthError`, `RateLimitError`, `PdfError`, `LayoutError`) con messaggi azionabili | `app/errors.py`, `cli.py`, `gui/app.py` | |
+| 3.4 | Tassonomia errori utente: codici di uscita stabili e messaggi con il rimedio | `app/errors.py`, `cli.py`, `gui/app.py` | ✅ **fatto** (8 test) |
 | 3.5 | Cache: TTL/versione, `pdfbook cache stats|prune`, export TM per documento | `translation/cache.py`, `cli.py` | |
 | 3.6 | Log strutturato su file con rotazione; nessun `print` in produzione | `config/logging.py` | |
 | 3.7 | Test di robustezza: 500 pagine sintetiche, 429 indotti, interruzione a metà | `tests/integration/` | |

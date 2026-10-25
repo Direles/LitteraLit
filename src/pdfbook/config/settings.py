@@ -57,6 +57,7 @@ class AppSettings:
     visual_qa: bool = True
     visual_qa_dpi: float = 72.0
     stitch_paragraphs: bool = True
+    checkpoint_every: int = 10
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -96,6 +97,7 @@ class AppSettings:
             "visual_qa": self.visual_qa,
             "visual_qa_dpi": self.visual_qa_dpi,
             "stitch_paragraphs": self.stitch_paragraphs,
+            "checkpoint_every": self.checkpoint_every,
             "has_api_key": bool(self.api_key),
         }
 
@@ -147,6 +149,7 @@ def load_settings(
         visual_qa=_as_bool(source.get("PDFBOOK_VISUAL_QA", "1")),
         visual_qa_dpi=_as_float(source.get("PDFBOOK_VISUAL_QA_DPI", "72"), 72.0),
         stitch_paragraphs=_as_bool(source.get("PDFBOOK_STITCH", "1")),
+        checkpoint_every=int(_as_float(source.get("PDFBOOK_CHECKPOINT_EVERY", "10"), 10.0)),
     )
 
 

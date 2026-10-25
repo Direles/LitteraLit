@@ -13,9 +13,9 @@ from pdfbook.translation.providers.base import ProviderError
 from .fakes import (
     EchoProvider,
     FailingProvider,
+    FailOnSecondCall,
     FakeSource,
     FixedProvider,
-    PartialProvider,
     make_block,
     make_line,
     make_page,
@@ -72,7 +72,7 @@ class JobTest(JobTestCase):
 
     def test_missing_translation_blocks_the_gate(self):
         source = FakeSource([simple_page("Uno", "Due")])
-        result = self.run_job(source, PartialProvider(keep=1))
+        result = self.run_job(source, EchoProvider(keep=1))
         self.assertTrue(result.violations())
         self.assertIn("untranslated_unresolved", result.violations()[0])
 
@@ -163,6 +163,79 @@ class StitchTest(JobTestCase):
     def test_unusable_split_fails_the_gate(self):
         result = self.run_job(self.build_source(), FixedProvider("x"))
         self.assertIn("split_failed", " ".join(result.violations()))
+
+
+class CheckpointTest(JobTestCase):
+    def test_journal_is_removed_when_the_job_completes(self):
+        from pdfbook.app.journal import journal_path
+
+        result = self.run_job(FakeSource([simple_page("uno"), simple_page("due", number=2)]), EchoProvider())
+        self.assertFalse(journal_path(result.output_pdf).exists())
+
+    def test_crash_keeps_journal_and_cache(self):
+        from pdfbook.app.journal import load_journal
+
+        settings = AppSettings(
+            provider="DeepSeek", model="m", api_key="k",
+            cache_path=self.root / "cache.json", checkpoint_every=1,
+        )
+        source = FakeSource([simple_page("uno"), simple_page("due", number=2)])
+        runtime = make_runtime(source, FailOnSecondCall(), settings.cache_path, save_calls=[])
+        spec = JobSpec(self.root / "in.pdf", self.root / "out.pdf", settings)
+        with self.assertRaises(ProviderError):
+            TranslationJob(spec, runtime, sleep=lambda _: None).run()
+        journal = load_journal(spec.output_pdf)
+        self.assertIsNotNone(journal)
+        self.assertEqual(journal.pages_done, 1)
+        self.assertTrue(settings.cache_path.exists())
+        self.assertIn("uno", settings.cache_path.read_text(encoding="utf-8"))
+
+    def test_resume_reuses_cache_and_reports_pages(self):
+        settings = AppSettings(
+            provider="DeepSeek", model="m", api_key="k",
+            cache_path=self.root / "cache.json", checkpoint_every=1,
+        )
+        pages = [simple_page("uno"), simple_page("due", number=2)]
+        first = make_runtime(
+            FakeSource(pages), FailOnSecondCall(), settings.cache_path, save_calls=[]
+        )
+        spec = JobSpec(self.root / "in.pdf", self.root / "out.pdf", settings)
+        with self.assertRaises(ProviderError):
+            TranslationJob(spec, first, sleep=lambda _: None).run()
+        second_provider = EchoProvider()
+        resumed_spec = JobSpec(
+            self.root / "in.pdf", self.root / "out.pdf", settings, resume=True
+        )
+        resumed = make_runtime(
+            FakeSource(pages), second_provider, settings.cache_path, save_calls=[]
+        )
+        result = TranslationJob(resumed_spec, resumed, sleep=lambda _: None).run()
+        self.assertEqual(result.resumed_pages, 1)
+        self.assertEqual(second_provider.calls, 1)
+
+    def test_resume_with_other_settings_is_refused(self):
+        from pdfbook.app.errors import UsageError
+
+        settings = AppSettings(
+            provider="DeepSeek", model="m", api_key="k",
+            cache_path=self.root / "cache.json", checkpoint_every=1,
+        )
+        pages = [simple_page("uno"), simple_page("due", number=2)]
+        first = make_runtime(FakeSource(pages), FailOnSecondCall(), settings.cache_path, save_calls=[])
+        spec = JobSpec(self.root / "in.pdf", self.root / "out.pdf", settings)
+        with self.assertRaises(ProviderError):
+            TranslationJob(spec, first, sleep=lambda _: None).run()
+        other = AppSettings(
+            provider="OpenAI", model="gpt-4o", api_key="k",
+            cache_path=self.root / "cache2.json", checkpoint_every=1,
+        )
+        resumed_spec = JobSpec(self.root / "in.pdf", self.root / "out.pdf", other, resume=True)
+        with self.assertRaises(UsageError):
+            TranslationJob(
+                resumed_spec,
+                make_runtime(FakeSource(pages), EchoProvider(), other.cache_path, save_calls=[]),
+                sleep=lambda _: None,
+            ).run()
 
 
 class PlanTest(unittest.TestCase):
