@@ -1,14 +1,16 @@
-# PDF Book Translator
+# LitteraLit — PDF Book Translator
 
 [![ci](https://github.com/Direles/LitteraLit/actions/workflows/ci.yml/badge.svg)](https://github.com/Direles/LitteraLit/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![release](https://img.shields.io/github/v/release/Direles/LitteraLit)](https://github.com/Direles/LitteraLit/releases)
+[![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+[![Binaries: AGPL-3.0](https://img.shields.io/badge/binaries-AGPL--3.0-orange.svg)](THIRD_PARTY.md)
 
 Traduce libri tecnici in PDF **conservando il layout**: redazione vettoriale del testo originale, riuso dei font embedded, sillabazione nella lingua di destinazione, adattamento tipografico con metriche reali e un report QA per pagina.
 
-> **Stato**: migrazione **completata** (M1–M11) e codice pubblicato. Il progetto vive in
-> `src/pdfbook/` (moduli con budget dimensionali e test) e in `docs/`; `legacy/` conserva il
-> codice Gen 1 congelato. **Dati editoriali e app precedente non fanno parte del progetto**:
-> sono stati rimossi e non sono conservati nel repository.
+> **Stato**: versione **0.2.0**. Il codice vive in `src/pdfbook/` (moduli con budget
+> dimensionali e test) e in `docs/`; `legacy/` conserva il codice Gen 1 congelato.
+> **Dati editoriali e app precedente non fanno parte del progetto**: sono stati rimossi e non
+> sono conservati nel repository. Cronologia in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Cosa fa
 
