@@ -14,6 +14,33 @@
 | `segmentation.py` | Righe visive (colonne affiancate), indici, classificazione del blocco | Non disegna e non decide il corpo |
 | `aligner.py` | Allineamento `left`/`center`/`right` di righe e blocchi | Non sposta il testo: restituisce solo etichette |
 
+## Paragraph stitching (Fase 2)
+
+```python
+detect_continuations(pages) -> list[Continuation]     # ultimo blocco ↔ primo blocco della pagina dopo
+merged_text(previous, following, hyphen=...) -> str   # trattino: si unisce senza spazio
+split_translation(first, second, translated) -> SplitResult
+```
+
+`Continuation.key` vale `p{prev}:{blocco}+p{next}:{blocco}`, quindi è stabile e leggibile nei log.
+Le euristiche per unire due blocchi:
+
+| Condizione | Perché |
+|---|---|
+| ultimo blocco della pagina **senza** punteggiatura terminale (`. ! ? : ; …`, ignorando virgolette finali) | la frase resta aperta |
+| primo blocco della pagina dopo che inizia con **minuscola** | segnale forte di continuazione |
+| stesso intervallo orizzontale (overlap ≥ 50%, o `x0` entro 24 pt) | evita di unire colonne diverse |
+| blocco nella fascia alta della pagina (`y0 < 35%` dell'altezza) | esclude firme e note in fondo |
+| blocchi non strutturati e testo ≥ 20 caratteri | esclude indici, titoli e numeri di pagina |
+
+`split_translation` divide la traduzione **in proporzione** ai due testi originali, cercando un
+confine di frase entro ±18% dal punto proporzionale e, in mancanza, un confine di parola. Se una
+parte scenderebbe sotto il 20% del totale non si divide: `SplitResult.usable` è `False` e il
+chiamante registra `split_failed` (bloccante), invece di pubblicare una pagina mezza vuota.
+
+**Costo noto**: il job materializza le pagine dell'intervallo per guardare avanti di una pagina.
+Per libri enormi è il primo punto da ottimizzare (streaming a finestra).
+
 ## Segmentazione e allineamento (M7)
 
 ```python

@@ -103,6 +103,7 @@ Un report che nessuno legge non è QA. `gate()` rende il report **azionabile**:
 | `untranslated_unresolved` | testo inglese pubblicato: difetto §11.2/3 |
 | `glyph_missing` | caratteri sostituiti o persi: difetto §11.2/13 (em-dash → `·`) |
 | `text_missing` | blocchi previsti e non resi: perdita di contenuto |
+| `split_failed` | paragrafo a cavallo di pagina non divisibile: la continuazione resterebbe non tradotta |
 
 Le altre issue (`font_reduced`, `retranslated`, `overflow_shifted`) restano **informative**:
 sono compromessi accettabili, non errori.

@@ -8,14 +8,13 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from pdfbook.config.settings import AppSettings
-from pdfbook.domain.models import PageLayout, QAReport
+from pdfbook.domain.models import IssueKind, PageLayout, QAIssue, QAReport
+from pdfbook.layout.flow import split_translation
 from pdfbook.layout.hyphenation import Hyphenation
-from pdfbook.layout.segmentation import is_structured_block
 from pdfbook.qa.checks_geometry import run_box
 from pdfbook.qa.checks_glyphs import check_page_glyphs
 from pdfbook.qa.checks_visual import check_page_visual
@@ -23,9 +22,10 @@ from pdfbook.qa.report import gate, write_report
 from pdfbook.rendering.vector_renderer import PageRenderResult, VectorRenderer
 from pdfbook.translation.pipeline import TranslationOutcome, TranslationPipeline
 
+from .page_plan import PagePlan, block_units, build_plans
 from .runtime import Runtime
 
-__all__ = ["JobResult", "JobSpec", "TranslationJob", "batch_for_page"]
+__all__ = ["JobResult", "JobSpec", "TranslationJob", "block_units", "build_plans"]
 
 log = logging.getLogger(__name__)
 
@@ -61,22 +61,6 @@ class JobResult:
         return gate(self.report)
 
 
-def batch_for_page(page: PageLayout) -> dict[str, str]:
-    """Chiavi di traduzione della pagina: ``b{i}`` per la prosa, ``b{i}_l{j}`` per le colonne."""
-    batch: dict[str, str] = {}
-    for block in page.blocks:
-        text = block.text
-        if not text.strip():
-            continue
-        if is_structured_block(block):
-            for index, line in enumerate(block.lines):
-                if line.text.strip():
-                    batch[f"{block.id}_l{index}"] = line.text
-        else:
-            batch[block.id] = text
-    return batch
-
-
 class TranslationJob:
     """Esegue la traduzione di un documento su un ``Runtime``."""
 
@@ -90,17 +74,19 @@ class TranslationJob:
     def run(self, progress=None) -> JobResult:
         """Traduce le pagine richieste, salva il PDF e il report QA."""
         first, last = self._range()
+        pages = [self.runtime.source.page(index) for index in range(first, last + 1)]
+        plans = build_plans(pages, stitch=self.spec.settings.stitch_paragraphs)
         translator = self._translator()
         renderer = self._renderer(translator)
         report = QAReport()
-        counters = {"blocks": 0, "perfect": 0, "overflow_shifted": 0}
+        counters = {"blocks": 0, "perfect": 0, "overflow_shifted": 0, "stitched": 0}
         previous: str | None = None
         total = last - first + 1
         try:
-            for done, index in enumerate(range(first, last + 1), start=1):
-                page = self.runtime.source.page(index)
-                translations = self._translate(translator, page, previous)
-                canvas = self.runtime.canvas_factory(index)
+            for done, plan in enumerate(plans, start=1):
+                page = plan.page
+                translations = self._translate_plan(plans, done - 1, translator, previous, report, counters)
+                canvas = self.runtime.canvas_factory(first + done - 1)
                 before = self._snapshot(canvas)
                 rendered = renderer.render_page(canvas, page, translations)
                 self._merge(report, rendered, counters)
@@ -112,7 +98,7 @@ class TranslationJob:
                     report.add(issue)
                 previous = self._page_text(page)
                 if progress:
-                    progress(done, total, f"pagina {index + 1}: {counters['blocks']} blocchi")
+                    progress(done, total, f"pagina {page.number}: {counters['blocks']} blocchi")
             if counters["blocks"] == 0:
                 raise ValueError(
                     "Il PDF non contiene testo selezionabile: serve un PDF con testo nativo."
@@ -165,15 +151,64 @@ class TranslationJob:
             overflow_policy=self.spec.overflow_policy,
         )
 
+    def _translate_plan(
+        self,
+        plans: list[PagePlan],
+        index: int,
+        translator: TranslationPipeline,
+        previous: str | None,
+        report: QAReport,
+        counters: dict[str, int],
+    ) -> dict[str, str]:
+        """Traduce le unità che iniziano su questa pagina e ricolloca le continuazioni."""
+        plan = plans[index]
+        translations = dict(plan.incoming)
+        if not plan.requests:
+            return translations
+        outcome: TranslationOutcome = translator.translate(plan.requests, context=previous)
+        for unit_key, value in outcome.translations.items():
+            target = plan.targets.get(unit_key)
+            if target is None:
+                continue
+            if target.second_block is None:
+                translations[target.first_block] = value
+                continue
+            self._apply_split(plan, plans, index, target, value, translations, report, counters)
+        return translations
+
     @staticmethod
-    def _translate(
-        translator: TranslationPipeline, page: PageLayout, previous: str | None
-    ) -> Mapping[str, str]:
-        batch = batch_for_page(page)
-        if not batch:
-            return {}
-        outcome: TranslationOutcome = translator.translate(batch, context=previous)
-        return outcome.translations
+    def _apply_split(
+        plan: PagePlan,
+        plans: list[PagePlan],
+        index: int,
+        target,
+        translated: str,
+        translations: dict[str, str],
+        report: QAReport,
+        counters: dict[str, int],
+    ) -> None:
+        split = split_translation(target.first_text, target.second_text, translated)
+        translations[target.first_block] = split.first
+        if not split.usable:
+            report.add(
+                QAIssue(
+                    page=plan.page.number,
+                    kind=IssueKind.SPLIT_FAILED,
+                    block=target.first_block,
+                    detail=f"non divisibile: {target.second_block} resta senza traduzione",
+                )
+            )
+            return
+        plans[index + 1].incoming[target.second_block] = split.second
+        counters["stitched"] += 1
+        report.add(
+            QAIssue(
+                page=plan.page.number,
+                kind=IssueKind.PARAGRAPH_STITCHED,
+                block=target.first_block,
+                detail=f"continua in {target.second_block} (pagina {plans[index + 1].page.number})",
+            )
+        )
 
     @staticmethod
     def _merge(report: QAReport, rendered: PageRenderResult, counters: dict[str, int]) -> None:

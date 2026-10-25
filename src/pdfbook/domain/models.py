@@ -55,6 +55,8 @@ class IssueKind(StrEnum):
     TEXT_MISSING = "text_missing"
     SCAN_FALLBACK = "scan_fallback"
     VISUAL_DRIFT = "visual_drift"
+    PARAGRAPH_STITCHED = "paragraph_stitched"
+    SPLIT_FAILED = "split_failed"
 
 
 @dataclass(frozen=True)

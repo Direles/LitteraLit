@@ -56,10 +56,6 @@ class FakeCanvas:
         )
 
 
-class FakeFont:
-    pass
-
-
 class FakeResolver:
     """Metrica finta: ogni carattere vale metà del corpo."""
 
@@ -68,7 +64,7 @@ class FakeResolver:
 
     def resolve(self, pdf_font_name):
         self.resolved.append(pdf_font_name)
-        return FakeFont()
+        return object()
 
     def text_length(self, text, pdf_font_name, fontsize):
         return len(text) * fontsize * 0.5
@@ -160,6 +156,20 @@ class FailingProvider:
     def complete(self, system, user):
         self.calls += 1
         raise ProviderError("provider non disponibile")
+
+
+class FixedProvider:
+    """Restituisce sempre lo stesso testo (per simulare traduzioni inadatte)."""
+
+    name = "fixed"
+
+    def __init__(self, text="x"):
+        self.text = text
+        self.calls = 0
+
+    def complete(self, system, user):
+        self.calls += 1
+        return json.dumps({key: self.text for key in json.loads(user)}, ensure_ascii=False)
 
 
 def make_runtime(source, provider, cache_path: Path, *, save_calls=None):

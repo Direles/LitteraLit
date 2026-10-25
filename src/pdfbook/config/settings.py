@@ -56,6 +56,7 @@ class AppSettings:
     api_key: str = field(default="", repr=False)
     visual_qa: bool = True
     visual_qa_dpi: float = 72.0
+    stitch_paragraphs: bool = True
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -94,6 +95,7 @@ class AppSettings:
             "ocr_url": self.ocr_url,
             "visual_qa": self.visual_qa,
             "visual_qa_dpi": self.visual_qa_dpi,
+            "stitch_paragraphs": self.stitch_paragraphs,
             "has_api_key": bool(self.api_key),
         }
 
@@ -144,6 +146,7 @@ def load_settings(
         api_key=source.get("PDFBOOK_API_KEY", ""),
         visual_qa=_as_bool(source.get("PDFBOOK_VISUAL_QA", "1")),
         visual_qa_dpi=_as_float(source.get("PDFBOOK_VISUAL_QA_DPI", "72"), 72.0),
+        stitch_paragraphs=_as_bool(source.get("PDFBOOK_STITCH", "1")),
     )
 
 

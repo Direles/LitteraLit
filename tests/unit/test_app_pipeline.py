@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from pdfbook.app import JobSpec, TranslationJob, batch_for_page
+from pdfbook.app import JobSpec, TranslationJob, block_units, build_plans
 from pdfbook.config.settings import AppSettings
 from pdfbook.domain.models import Rect
 from pdfbook.qa.report import parse_report
@@ -14,6 +14,7 @@ from .fakes import (
     EchoProvider,
     FailingProvider,
     FakeSource,
+    FixedProvider,
     PartialProvider,
     make_block,
     make_line,
@@ -118,17 +119,83 @@ class JobTest(JobTestCase):
 class BatchTest(unittest.TestCase):
     def test_prose_blocks_use_block_id(self):
         page = make_page(make_block("b0", [make_line("uno")]), make_block("b1", [make_line("due")]))
-        self.assertEqual(batch_for_page(page), {"b0": "uno", "b1": "due"})
+        self.assertEqual(block_units(page), {"b0": "uno", "b1": "due"})
 
     def test_structured_blocks_use_line_keys(self):
         left = make_line("Titolo:", x0=0.0, width=60.0)
         right = make_line("Sottotitolo", x0=100.0, width=120.0)
         block = make_block("b0", [left, right], bbox=Rect(0, 100, 260, 130))
-        self.assertEqual(batch_for_page(make_page(block)), {"b0_l0": "Titolo:", "b0_l1": "Sottotitolo"})
+        self.assertEqual(block_units(make_page(block)), {"b0_l0": "Titolo:", "b0_l1": "Sottotitolo"})
 
     def test_blank_blocks_are_skipped(self):
         page = make_page(make_block("b0", [make_line("   ")]))
-        self.assertEqual(batch_for_page(page), {})
+        self.assertEqual(block_units(page), {})
+
+
+class StitchTest(JobTestCase):
+    def build_source(self):
+        first = make_page(
+            make_block("b0", [make_line("Il testo resta aperto senza punto finale")]), number=1
+        )
+        second = make_page(
+            make_block("b0", [make_line("continua sulla pagina seguente con altre parole.")]), number=2
+        )
+        return FakeSource([first, second])
+
+    def test_continuation_is_translated_once(self):
+        provider = EchoProvider()
+        result = self.run_job(self.build_source(), provider)
+        self.assertEqual(provider.calls, 1)
+        self.assertEqual(result.summary.get("stitched"), 1)
+        self.assertEqual(result.violations(), [])
+
+    def test_stitch_can_be_disabled(self):
+        settings = AppSettings(
+            provider="DeepSeek", model="m", api_key="k",
+            cache_path=self.root / "cache2.json", stitch_paragraphs=False,
+        )
+        provider = EchoProvider()
+        runtime = make_runtime(self.build_source(), provider, settings.cache_path, save_calls=[])
+        spec = JobSpec(self.root / "in.pdf", self.root / "out.pdf", settings)
+        TranslationJob(spec, runtime, sleep=lambda _: None).run()
+        self.assertEqual(provider.calls, 2)
+
+    def test_unusable_split_fails_the_gate(self):
+        result = self.run_job(self.build_source(), FixedProvider("x"))
+        self.assertIn("split_failed", " ".join(result.violations()))
+
+
+class PlanTest(unittest.TestCase):
+    def test_continuation_merges_requests(self):
+        first = make_page(
+            make_block("b0", [make_line("Il testo resta aperto senza punto finale")]), number=1
+        )
+        second = make_page(
+            make_block("b0", [make_line("continua sulla pagina seguente con parole")]), number=2
+        )
+        plans = build_plans([first, second])
+        self.assertEqual(len(plans[0].requests), 1)
+        self.assertEqual(plans[1].requests, {})
+        target = plans[0].targets[next(iter(plans[0].requests))]
+        self.assertEqual((target.first_block, target.second_block), ("b0", "b0"))
+
+    def test_stitch_disabled_keeps_blocks_separate(self):
+        pages = [
+            make_page(make_block("b0", [make_line("aperto senza punto finale qui")]), number=1),
+            make_page(make_block("b0", [make_line("continua sulla pagina seguente")]), number=2),
+        ]
+        plans = build_plans(pages, stitch=False)
+        self.assertEqual(len(plans[0].requests), 1)
+        self.assertEqual(len(plans[1].requests), 1)
+
+    def test_terminated_paragraph_is_not_merged(self):
+        pages = [
+            make_page(make_block("b0", [make_line("Il paragrafo finisce con un punto.")]), number=1),
+            make_page(make_block("b0", [make_line("e la pagina dopo inizia minuscola")]), number=2),
+        ]
+        plans = build_plans(pages)
+        self.assertEqual(len(plans[0].requests), 1)
+        self.assertEqual(len(plans[1].requests), 1)
 
 
 if __name__ == "__main__":

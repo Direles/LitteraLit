@@ -79,7 +79,8 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/layout/fitter.py` | layout | `wrap_text`, `fit_text`, budget caratteri; metriche iniettate | 200 | **esistente (M6)** | `tests/unit/test_fitter.py` |
 | `src/pdfbook/layout/hyphenation.py` | layout | Sillabazione per lingua (pyphen, degrado dichiarato) | 90 | **esistente (M6)** | `tests/unit/test_hyphenation.py` |
 | `src/pdfbook/layout/toc.py` | layout | Riconoscimento e riallineamento delle righe d'indice | 70 | **esistente (M6)** | `tests/unit/test_toc.py` |
-| `src/pdfbook/layout/flow.py` | layout | Paragraph stitching fra pagine + ridistribuzione della traduzione | 200 | pianificato (Fase 2) | `tests/unit/test_flow.py` |
+| `src/pdfbook/layout/flow.py` | layout | Paragraph stitching fra pagine + ridistribuzione della traduzione | 200 | **esistente (Fase 2)** | `tests/unit/test_flow.py` |
+| `src/pdfbook/app/page_plan.py` | app | Unità di traduzione per pagina e destinazioni (con stitching) | 110 | **esistente (Fase 2)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/layout/tables.py` | layout | Rilevamento e struttura delle tabelle | 180 | pianificato (Fase 2) | `tests/unit/test_tables.py` |
 | `src/pdfbook/qa/checks_visual.py` | qa | SSIM/pixel-diff originale↔output | 150 | pianificato (Fase 0) | `tests/unit/test_checks_visual.py` |
 | `src/pdfbook/ocr/vlm_adapter.py` | ocr | Sidecar OCR/VLM dietro `DocumentSource` | 150 | opzionale (Fase 4) | `tests/unit/test_ocr_adapter.py` |

@@ -36,6 +36,7 @@ GATE_KINDS: tuple[IssueKind, ...] = (
     IssueKind.UNTRANSLATED_UNRESOLVED,
     IssueKind.GLYPH_MISSING,
     IssueKind.TEXT_MISSING,
+    IssueKind.SPLIT_FAILED,
 )
 
 
