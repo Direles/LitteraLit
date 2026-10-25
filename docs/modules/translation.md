@@ -149,6 +149,23 @@ nella partizione di cache (`setting.style`): due stili diversi non condividono t
 Un nome sconosciuto è un errore di configurazione (exit code 2), non un fallback silenzioso —
 così `PDFBOOK_STYLE=accademicoo` si vede subito.
 
+## Memoria terminologica (Fase 5.3)
+
+```python
+memory = Terminology(min_occurrences=3)
+memory.observe(page_number, testi_della_pagina)
+memory.candidates(limit=80) -> list[Term]      # testo, occorrenze, pagine
+memory.glossary_lines() -> list[str]           # una riga per termine
+```
+
+Cosa diventa candidato: sequenze di parole capitalizzate (`Kent Beck`), acronimi (`MVP`,
+`API`) e gergo con maiuscola interna o trattino (`JavaScript`, `e-commerce`). Cosa viene
+escluso: la parola iniziale di frase da sola (è quasi sempre un articolo o un verbo) e i
+termini visti meno di `MIN_OCCURRENCES` volte.
+
+Le proposte **non entrano da sole** nella traduzione: sono un file da rivedere e passare a
+`PDFBOOK_GLOSSARY`. Un falso positivo qui costa una traduzione sbagliata per tutto il libro.
+
 ## Esempio d'uso
 
 ```python
