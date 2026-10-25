@@ -32,15 +32,33 @@ risponde.
 
 ## Firme e avvisi
 
-I binari **non sono firmati** (nessun certificato nel repository):
+La pipeline di release è **già attrezzata** per firmare: se i segreti non ci sono, i passi
+di firma si saltano e la release resta utilizzabile.
+
+| Piattaforma | Segreti GitHub | Cosa fa |
+|---|---|---|
+| Windows | `WINDOWS_CERT_BASE64`, `WINDOWS_CERT_PASSWORD` | `packaging/sign_windows.ps1`: importa il `.pfx`, firma SHA-256 con timestamp DigiCert, verifica con `signtool verify /pa` |
+| macOS | `APPLE_CERT_P12_BASE64`, `APPLE_CERT_PASSWORD`, `APPLE_TEAM_ID`, `APPLE_ID`, `APPLE_APP_PASSWORD` | `packaging/sign_macos.sh`: keychain temporaneo, `codesign --deep --options runtime`, `notarytool submit --wait`, `stapler` |
+
+I binari **non firmati** (comportamento predefinito senza segreti):
 
 - **Windows**: SmartScreen mostra "Autore sconosciuto" → *Ulteriori informazioni* → *Esegui
-  comunque*. Una release firmata richiede un certificato EV e un passo `signtool` con i
-  segreti in CI.
+  comunque*. Una release firmata richiede un certificato EV o OV con chiave privata.
 - **macOS**: Gatekeeper blocca l'app scaricata → tasto destro → *Apri*, oppure
-  `xattr -dr com.apple.quarantine /Applications/LitteraLit.app`. La notarizzazione richiede
-  un account Apple Developer.
-- **Linux**: nessun avviso; l'AppImage (non ancora prodotta) eviterebbe anche il `tar.gz`.
+  `xattr -dr com.apple.quarantine /Applications/LitteraLit.app`.
+- **Linux**: nessun avviso; l'AppImage evita anche l'estrazione del `tar.gz`.
+
+## AppImage (Linux)
+
+`packaging/appimage.sh` impacchetta la GUI in un singolo file eseguibile:
+
+```bash
+bash packaging/appimage.sh dist/pdfbook-gui
+# → LitteraLit-<versione>-x86_64.AppImage
+```
+
+Usa `appimagetool --appimage-extract-and-run` (nessun FUSE richiesto) e il desktop file
+`litteralit.desktop` con icona SVG. La versione arriva da `VERSION` (il workflow la ricava dal tag).
 
 ## Licenza dei binari
 

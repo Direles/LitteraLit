@@ -2,6 +2,25 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/it/1.1.0/); versioni [SemVer](https://semver.org/lang/it/).
 
+## [0.2.1] — 2025-10-25
+
+### Aggiunto
+
+- **Shaping RTL/CJK** — i blocchi in arabo, ebraico, devanagari, cinese, giapponese e coreano
+  passano dal motore HTML di PyMuPDF (`insert_htmlbox`) con direzione corretta e catena di font
+  Noto; issue `shaped_text`, contatore `shaped`, impostazione `PDFBOOK_SHAPING`.
+- **Anteprima prima/dopo nella GUI** — testo a fronte per pagina (`gui/preview.py`,
+  `preview_window.py`) con copertura dei blocchi tradotti.
+- **Drag & drop** del PDF nella GUI con l'extra opzionale `tkinterdnd2`.
+- **AppImage** Linux nella release (`packaging/appimage.sh`), con desktop file e icona SVG.
+- **Firme**: passi Windows (`signtool`) e macOS (`codesign` + `notarytool` + `stapler`) pronti e
+  attivi appena i segreti sono configurati.
+
+### Cambiato
+
+- La release include quattro artefatti (zip Windows, tar.gz macOS/Linux, AppImage).
+- `unsupported_script` compare solo con shaping disattivato.
+
 ## [0.2.0] — 2025-10-25
 
 Prima release "da strumento valido a strumento premium": la pipeline conserva la tipografia,

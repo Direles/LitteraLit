@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag della release (es. v0.1.0)"
+        description: "Tag della release (es. v0.2.1)"
         required: true
   push:
     tags:
@@ -37,6 +37,30 @@ jobs:
             --collect-all pymupdf --paths src src/pdfbook/cli.py
           python -m PyInstaller --noconfirm --clean --windowed --name pdfbook-gui --onedir \
             --collect-all customtkinter --collect-all pymupdf --paths src src/pdfbook/gui/app.py
+      - name: Verifica che il binario parta
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then ./dist/pdfbook/pdfbook.exe --version; else ./dist/pdfbook/pdfbook --version; fi
+
+      - name: Firma Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          pwsh packaging/sign_windows.ps1 -Files dist/pdfbook/pdfbook.exe,dist/pdfbook-gui/pdfbook-gui.exe
+      - name: Firma e notarizzazione macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APPLE_CERT_P12_BASE64: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: bash packaging/sign_macos.sh
+
       - name: Pacchetto (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -47,16 +71,21 @@ jobs:
         shell: bash
         run: |
           tar -czf "LitteraLit-${RUNNER_OS}.tar.gz" -C dist pdfbook pdfbook-gui
-      - name: Verifica che il binario parta
+      - name: AppImage (Linux)
+        if: runner.os == 'Linux'
         shell: bash
+        env:
+          VERSION: ${{ github.ref_name }}
         run: |
-          if [ "$RUNNER_OS" = "Windows" ]; then ./dist/pdfbook/pdfbook.exe --version; else ./dist/pdfbook/pdfbook --version; fi
+          bash packaging/appimage.sh dist/pdfbook-gui
+
       - uses: actions/upload-artifact@v4
         with:
           name: LitteraLit-${{ matrix.os }}
           path: |
             LitteraLit-*.zip
             LitteraLit-*.tar.gz
+            LitteraLit-*.AppImage
           retention-days: 14
       - name: Allega alla release
         if: startsWith(github.ref, 'refs/tags/')
@@ -65,10 +94,13 @@ jobs:
           files: |
             LitteraLit-*.zip
             LitteraLit-*.tar.gz
+            LitteraLit-*.AppImage
           generate_release_notes: true
           body: |
-            Build automatica da tag. I binari **non sono firmati**: Windows mostrerà
-            SmartScreen e macOS chiederà di autorizzare l'app (tasto destro → Apri).
+            Build automatica da tag.
 
-            Il programma incorpora PyMuPDF (AGPL-3.0): la distribuzione è sotto AGPL-3.0.
-            Sorgente corrispondente: questo repository, allo stesso tag.
+            - I binari sono firmati solo se i segreti di firma sono configurati; altrimenti
+              Windows mostra SmartScreen (Ulteriori informazioni → Esegui comunque) e macOS
+              chiede di autorizzare l'app (tasto destro → Apri).
+            - Il programma incorpora PyMuPDF (AGPL-3.0): la distribuzione è sotto AGPL-3.0.
+              Sorgente corrispondente: questo repository, allo stesso tag.
