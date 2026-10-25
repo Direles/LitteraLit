@@ -119,6 +119,21 @@ class StressTest(unittest.TestCase):
         job.run()
         self.assertEqual(source.requested, list(range(25)))
 
+    def test_memory_stays_within_budget(self):
+        """Proxy del budget "500 pagine sotto 4 GB": il run finto deve restare sotto 256 MB."""
+        import tracemalloc
+
+        source = stress_pages(pages=150)
+        job = self.job(self.runtime(source, EchoProvider()))
+        tracemalloc.start()
+        try:
+            result = job.run()
+            _current, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+        self.assertEqual(result.blocks, 150 * BLOCKS_PER_PAGE)
+        self.assertLess(peak / 1024 / 1024, 256.0, f"picco {peak / 1024 / 1024:.0f} MB")
+
 
 if __name__ == "__main__":
     unittest.main()

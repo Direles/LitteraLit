@@ -17,6 +17,7 @@ Ogni file risponde a **una** domanda e resta sotto le 400 righe (regola R8 in [`
 | [`10-valutazione-target.md`](10-valutazione-target.md) | 12–13 | Giudizio complessivo e architettura target (roadmap) |
 | [`11-unlimited-ocr.md`](11-unlimited-ocr.md) | 14 | Valutazione di un OCR/VLM end-to-end e QA visivo |
 | [`12-appendici.md`](12-appendici.md) | 15–17 | Simboli, costanti di taratura, glossario |
+| [`13-licenza.md`](13-licenza.md) | 18 | Licenza PyMuPDF (AGPL): opzioni, impatto, decisione richiesta |
 
 **Routing operativo**: per sapere *quale file aprire* non usare questo indice, usa [`docs/MODULE_MAP.md`](../MODULE_MAP.md).
 **Stato del codice**: l'architettura qui descritta è quella **osservata** (Gen 1 + Gen 2); il passaggio alla struttura `src/pdfbook/` è pianificato in `MODULE_MAP.md` §5.

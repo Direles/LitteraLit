@@ -146,7 +146,7 @@ senso, perché la lingua cambia i glifi. Restano 0.3–0.6 (fixture multiple, go
 | 6.2 | CLI: `pdfbook qa`, `report --html`, `batch` su più file | | **parziale**: `pdfbook qa` e `pdfbook report` (HTML statico); `batch` ancora da fare |
 | 6.3 | Packaging multi-OS in CI (PyInstaller matrix), release firmate Windows, AppImage Linux | oggi c'è solo il lanciatore | **parziale**: job `package` in CI (sdist+wheel, `twine check`, install in ambiente pulito); PyInstaller e release firmate restano da fare |
 | 6.4 | Guida utente con screenshot, troubleshooting, FAQ, video breve | docs/ | **parziale**: `docs/GUIDA.md` (installazione, primo libro, report, problemi frequenti); screenshot e video ancora da fare |
-| 6.5 | **Decisione licenza**: sostituire PyMuPDF (pypdfium2 + pdfminer/pdfplumber + pikepdf + ReportLab) oppure accettare AGPL | blocca la distribuzione commerciale |
+| 6.5 | **Decisione licenza**: sostituire PyMuPDF (pypdfium2 + pdfminer/pdfplumber + pikepdf + ReportLab) oppure accettare AGPL | blocca la distribuzione commerciale | **in attesa di decisione**: analisi e opzioni in [`docs/architecture/13-licenza.md`](architecture/13-licenza.md) |
 
 **Accettazione**: macchina pulita → doppio clic → traduzione → gate PASS, senza terminale; artefatti in GitHub Releases.
 
