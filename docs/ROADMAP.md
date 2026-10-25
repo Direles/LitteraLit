@@ -2,6 +2,9 @@
 
 > Documento di pianificazione. Regole: [`AGENTS.md`](../AGENTS.md). Routing: [`MODULE_MAP.md`](MODULE_MAP.md).
 > Stato di partenza: M1–M11 chiusi, P0.5 chiuso, **316 test**, gate di struttura a 0 errori, CI verde.
+> Stato attuale: **548 test**, 128 file, `modularity_check --strict` a 0 errori/0 warning, CI verde.
+> Chiusi: 1.1, 1.2, 1.3, 2.1–2.6, 3.1–3.5, 3.7, 4.1 (riconoscimento scansioni), 5.1, 5.3–5.5, 6.2 (qa/report).
+> Bloccati da binari esterni: 1.4 (font bundle), 4.2/4.3 (OCR).
 > Questo piano definisce *cosa* manca, *in che ordine*, *come si misura* che sia servito.
 
 ---
