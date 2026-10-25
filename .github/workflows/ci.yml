@@ -18,6 +18,8 @@ jobs:
           python -m pip install -e ".[dev]"
       - name: Regole di struttura (AGENTS.md)
         run: python tools/modularity_check.py
+      - name: Segreti (nessuna chiave nel codice o nei config)
+        run: python tools/modularity_check.py --secrets-only
       - name: Test unitari
         run: python -m unittest discover -s tests -v
       - name: Lint

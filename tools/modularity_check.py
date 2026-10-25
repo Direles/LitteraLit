@@ -1,11 +1,9 @@
-"""Enforcement delle regole di AGENTS.md.
-
-Verifica: R1 (budget), R2 (radice), R3 (dati nel codice), R5 (layer), R8/R10 (mappa),
-R11 (segreti e path assoluti), R12 (import da legacy), R13 (print, hack stdout).
+"""Enforcement delle regole di AGENTS.md (R1, R2, R3, R5, R8, R10, R11, R12, R13).
 
     py tools/modularity_check.py              # src, tools, tests
     py tools/modularity_check.py --strict     # warning = errori
-    py tools/modularity_check.py --audit-all  # + legacy/ e app Gen 2, con audit segreti
+    py tools/modularity_check.py --audit-all  # + legacy/ e file di configurazione
+    py tools/modularity_check.py --secrets-only   # solo R11 (usato in CI)
 """
 from __future__ import annotations
 
@@ -13,8 +11,9 @@ import argparse
 import ast
 import re
 import sys
-from dataclasses import dataclass, field
 from pathlib import Path
+
+from check_report import Report, exit_code, render
 
 ROOT = Path(__file__).resolve().parents[1]
 CODE_ZONES = ("src", "tools", "tests")
@@ -60,38 +59,14 @@ LAYER_ALLOWED = {
 }
 
 
-@dataclass
-class Issue:
-    level: str
-    rule: str
-    where: str
-    line: int
-    message: str
-
-
-@dataclass
-class Report:
-    issues: list[Issue] = field(default_factory=list)
-    scanned: int = 0
-
-    def add(self, level: str, rule: str, where: str, line: int, message: str) -> None:
-        self.issues.append(Issue(level, rule, where, line, message))
-
-    def by_rule(self) -> dict[str, list[Issue]]:
-        grouped: dict[str, list[Issue]] = {}
-        for issue in self.issues:
-            grouped.setdefault(f"{issue.level}/{issue.rule}", []).append(issue)
-        return grouped
-
-
 class Checker:
     """Un metodo per regola: nessuna funzione lunga, nessun effetto globale."""
 
-    def __init__(self, audit_all: bool, with_secrets: bool) -> None:
+    def __init__(self, audit_all: bool, with_secrets: bool, secrets_only: bool = False) -> None:
         self.audit_all = audit_all
         self.with_secrets = with_secrets
+        self.secrets_only = secrets_only
         self.rep = Report()
-
     # ---------- utilità ----------
 
     @staticmethod
@@ -142,8 +117,22 @@ class Checker:
                 self.check_import(name, layer, node)
             elif isinstance(node, ast.Name) and node.id == "print":
                 self.check_print(name, layer, node)
-        self.check_top_level_defs(name, tree)
-        self.check_inline_data(name, tree)
+        top = [
+            n for n in getattr(tree, "body", [])
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+        ]
+        if len(top) > DEFS_ERROR:
+            self.rep.add("ERROR", "R1", name, 1, f"{len(top)} def top-level")
+        elif len(top) > DEFS_WARN:
+            self.rep.add("WARN", "R1", name, 1, f"{len(top)} def top-level")
+        literals = [
+            n for n in ast.walk(tree)
+            if isinstance(n, ast.Constant) and isinstance(n.value, str)
+            and len(n.value) > DATA_STRING_LEN
+        ]
+        if len(literals) > DATA_STRING_MAX:
+            self.rep.add("ERROR", "R3", name, 1,
+                         f"{len(literals)} stringhe > {DATA_STRING_LEN} caratteri: dati nel codice?")
 
     def check_def_size(self, name: str, node: ast.AST) -> None:
         """Il budget 50/80 riguarda funzioni e metodi; le classi seguono il budget di file."""
@@ -171,35 +160,18 @@ class Checker:
             return
         self.rep.add("WARN", "R13", name, node.lineno, "print nel codice")
 
-    def check_top_level_defs(self, name: str, tree: ast.AST) -> None:
-        top = [
-            n for n in getattr(tree, "body", [])
-            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-        ]
-        if len(top) > DEFS_ERROR:
-            self.rep.add("ERROR", "R1", name, 1, f"{len(top)} def top-level")
-        elif len(top) > DEFS_WARN:
-            self.rep.add("WARN", "R1", name, 1, f"{len(top)} def top-level")
-
-    def check_inline_data(self, name: str, tree: ast.AST) -> None:
-        literals = [
-            n.value for n in ast.walk(tree)
-            if isinstance(n, ast.Constant) and isinstance(n.value, str)
-            and len(n.value) > DATA_STRING_LEN
-        ]
-        if len(literals) > DATA_STRING_MAX:
-            self.rep.add("ERROR", "R3", name, 1,
-                         f"{len(literals)} stringhe > {DATA_STRING_LEN} caratteri: dati nel codice?")
 
     # ---------- R11/R13 via testo ----------
 
-    def check_text(self, name: str, text: str, secrets: bool, abs_paths: bool = True) -> None:
+    def check_text(
+        self, name: str, text: str, secrets: bool, abs_paths: bool = True, stdout_hack: bool = True
+    ) -> None:
         for lineno, line in enumerate(text.splitlines(), start=1):
             if secrets:
                 self.check_secret(name, lineno, line)
             if abs_paths and ABS_PATH_RE.search(line):
                 self.rep.add("WARN", "R11", name, lineno, "percorso assoluto utente")
-            if name.endswith(".py") and STDOUT_HACK_RE.search(line):
+            if stdout_hack and name.endswith(".py") and STDOUT_HACK_RE.search(line):
                 self.rep.add("ERROR", "R13", name, lineno, "hack sys.stdout")
 
     def check_secret(self, name: str, lineno: int, line: str) -> None:
@@ -221,11 +193,10 @@ class Checker:
 
     # ---------- R2/R8: luoghi canonici ----------
 
-    def check_root_python(self) -> None:
+    def check_places(self) -> None:
+        """R2: nessun file di codice alla radice; R8: documenti entro il budget."""
         for path in sorted(ROOT.glob("*.py")):
             self.rep.add("WARN", "R2", path.name, 1, "codice alla radice: spostare in legacy/")
-
-    def check_docs(self) -> None:
         base = ROOT / DOC_ZONE
         if not base.exists():
             return
@@ -238,6 +209,8 @@ class Checker:
     # ---------- orchestrazione ----------
 
     def run(self) -> Report:
+        if self.secrets_only:
+            return self.run_secrets_only()
         zones = CODE_ZONES + (AUDIT_ZONES if self.audit_all else ())
         for path in self.python_files(zones):
             self.rep.scanned += 1
@@ -253,8 +226,18 @@ class Checker:
                 text = path.read_text(encoding="utf-8", errors="replace")
                 self.check_text(self.rel(path), text, secrets=True, abs_paths=False)
         self.check_map()
-        self.check_root_python()
-        self.check_docs()
+        self.check_places()
+        return self.rep
+
+    def run_secrets_only(self) -> Report:
+        """Solo R11: chiavi in chiaro nel codice e nei file di configurazione."""
+        paths = [*self.python_files(CODE_ZONES + ("legacy",)), *self.config_files()]
+        for path in paths:
+            self.rep.scanned += 1
+            text = path.read_text(encoding="utf-8", errors="replace")
+            self.check_text(
+                self.rel(path), text, secrets=True, abs_paths=False, stdout_hack=False
+            )
         return self.rep
 
     def parse(self, name: str, path: Path) -> ast.AST | None:
@@ -265,35 +248,20 @@ class Checker:
             return None
 
 
-def render(rep: Report) -> None:
-    """Stampa il report: massimo 5 esempi per regola, conteggi completi."""
-    errors = sum(1 for i in rep.issues if i.level == "ERROR")
-    warns = sum(1 for i in rep.issues if i.level == "WARN")
-    print(f"== modularity_check == file analizzati: {rep.scanned} | "
-          f"errori: {errors} | warning: {warns}")
-    for key in sorted(rep.by_rule(), key=lambda k: (not k.startswith("ERROR"), k)):
-        issues = rep.by_rule()[key]
-        print(f"\n-- {key}: {len(issues)}")
-        for issue in issues[:5]:
-            print(f"   {issue.where}:{issue.line}  {issue.message}")
-        if len(issues) > 5:
-            print(f"   ... e altri {len(issues) - 5}")
-    if not rep.issues:
-        print("\nNessuna violazione: struttura conforme ad AGENTS.md.")
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Verifica le regole di AGENTS.md")
     parser.add_argument("--strict", action="store_true", help="warning = errore")
     parser.add_argument("--audit-all", action="store_true", help="include legacy/ e app Gen 2")
+    parser.add_argument("--secrets-only", action="store_true", help="solo controllo segreti (R11)")
     parser.add_argument("--no-secrets", action="store_true", help="salta il controllo chiavi")
     args = parser.parse_args(argv)
-    rep = Checker(audit_all=args.audit_all, with_secrets=not args.no_secrets).run()
+    rep = Checker(
+        audit_all=args.audit_all,
+        with_secrets=not args.no_secrets,
+        secrets_only=args.secrets_only,
+    ).run()
     render(rep)
-    failed = any(i.level == "ERROR" for i in rep.issues) or (
-        args.strict and any(i.level == "WARN" for i in rep.issues)
-    )
-    return 1 if failed else 0
+    return exit_code(rep, strict=args.strict)
 
 
 if __name__ == "__main__":

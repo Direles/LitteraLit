@@ -45,9 +45,9 @@ Senza numeri, "premium" è un'opinione. Questi sono i target che ogni fase deve 
 | 0.1 | Confronto visivo originale↔output: SSIM, densità inchiostro, mappa di diff per pagina | `src/pdfbook/qa/checks_visual.py` | ✅ **fatto** (19 test) |
 | 0.2 | Issue `VISUAL_DRIFT` con soglia configurabile, integrata nel report | `qa/report.py` (nuovo `IssueKind`) | ✅ **fatto** (informativa, non bloccante) |
 | 0.3 | Fixture PDF **sintetiche** (licenza pulita): nativo semplice, 2 colonne, indice, tabella, scansione simulata | `tests/integration/` (generate al volo, nessun binario nel repo) | ⏳ **parziale** (nativo semplice; mancano colonne/indice/tabella) |
-| 0.4 | Test golden: pipeline con provider finto → snapshot del report QA (JSON normalizzato) | `tests/golden/` | ⏳ da fare |
-| 0.5 | Baseline metriche per fixture, usata come soglia di regressione in CI | `tests/golden/baseline.json` | ⏳ da fare |
-| 0.6 | CI: job "regressione visiva" + `pip-licenses` + `gitleaks` | `.github/workflows/ci.yml` | ⏳ da fare (i test di integrazione girano già) |
+| 0.4 | Test golden: pipeline con provider finto → snapshot del report QA (JSON normalizzato) | `tests/integration/test_golden.py` | ✅ **fatto** (5 test) |
+| 0.5 | Baseline metriche per fixture, usata come soglia di regressione in CI | `tests/golden/baseline.json` | ✅ **fatto** |
+| 0.6 | CI: "regressione visiva" + `pip-licenses` + `gitleaks` | `.github/workflows/ci.yml` | ✅ **parziale**: golden+integrazione girano in CI, aggiunto `--secrets-only`; **audit licenze rinviato alla 6.5** (PyMuPDF è AGPL: fallirebbe subito) |
 
 **Accettazione**: una modifica al renderer che peggiora SSIM oltre 0,01 fa fallire la CI.
 

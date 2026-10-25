@@ -1,0 +1,16 @@
+{
+  "pages": 2,
+  "blocks": 6,
+  "issue_kinds": {
+    "clipped": 2,
+    "font_reduced": 4
+  },
+  "summary": {
+    "base14_fallback": 0,
+    "blocks": 6,
+    "embedded_fonts_reused": 0,
+    "overflow_shifted": 0,
+    "perfect": 4,
+    "system_fonts_used": 1
+  }
+}
