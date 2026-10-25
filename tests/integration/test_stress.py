@@ -13,7 +13,6 @@ from pathlib import Path
 from pdfbook.app import JobSpec, TranslationJob
 from pdfbook.config.settings import AppSettings
 from pdfbook.qa.report import gate, parse_report
-
 from unit.fakes import EchoProvider, FakeSource, make_block, make_line, make_page, make_runtime
 
 PAGES = 500
