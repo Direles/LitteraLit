@@ -84,6 +84,8 @@ traduzione, nessuna cache. I dati editoriali restano in locale, fuori dal proget
 
 **Prima di aprire un file di codice**, leggi [`AGENTS.md`](AGENTS.md) e [`docs/MODULE_MAP.md`](docs/MODULE_MAP.md): contengono le regole vincolanti (budget dimensionali, confini tra layer, documentazione modulare) e la mappa che dice dove intervenire.
 
+Per sapere **cosa** implementare e in che ordine: [`docs/ROADMAP.md`](docs/ROADMAP.md) (fasi, metriche target, criteri di accettazione).
+
 ```powershell
 py tools/modularity_check.py          # verifica struttura
 py -m unittest discover -s tests -v   # test
