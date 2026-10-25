@@ -25,6 +25,11 @@ class FakeCanvas:
         self.fail_containing = fail_containing
         self.snapshot_value = snapshot_value
         self.snapshots = 0
+        self.markup = []
+
+    def insert_markup(self, box, markup, css):
+        self.markup.append((box, markup, css))
+        return True
 
     def redact(self, box):
         self.redactions.append(box)
@@ -40,7 +45,9 @@ class FakeCanvas:
 
     def text(self):
         """Testo come lo vedrebbe l'estrattore: righe separate da spazio."""
-        return " ".join(run.text for run in self.runs)
+        parts = [run.text for run in self.runs]
+        parts.extend(markup for _box, markup, _css in self.markup)
+        return " ".join(parts)
 
     def snapshot(self, dpi: float = 72.0):
         """Immagine uniforme: i test visivi usano canvas dedicati."""

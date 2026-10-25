@@ -134,6 +134,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/rendering/vector_renderer.py` | rendering | Orchestrazione di pagina: redazione, painter, shift, draw | 140 | **esistente (M9)** | `tests/unit/test_vector_renderer.py` |
 | `src/pdfbook/rendering/fitz_canvas.py` | rendering | Unico punto con `fitz`: redaction + `TextWriter` per colore | 90 | **esistente (M9)** | smoke test |
 | `src/pdfbook/rendering/styled.py` | rendering | Disegno con stili inline: a capo e run per parola | 160 | **esistente (Fase 1.2)** | `tests/unit/test_styles.py` |
+| `src/pdfbook/rendering/shaped.py` | rendering | Shaping RTL/CJK via riquadro HTML/CSS (`insert_htmlbox`) | 120 | **esistente (Fase 4.5)** | `tests/unit/test_shaping.py` |
 | `src/pdfbook/qa/report.py` | qa | Formato compatibile, scrittura atomica, `gate()` | 150 | **esistente (M10)** | `tests/unit/test_qa_report.py` |
 | `src/pdfbook/qa/checks_glyphs.py` | qa | Glyph-diff atteso/reso con normalizzazione NBSP | 110 | **esistente (P0.5)** | `tests/unit/test_checks_glyphs.py` |
 | `src/pdfbook/qa/checks_glossary.py` | qa | Verifica che i termini del glossario restino invariati | 80 | **esistente (Fase 5.1)** | `tests/unit/test_checks_glossary.py` |

@@ -36,26 +36,12 @@ def render_and_check(
 
     for issue in rendered.issues:
         report.add(issue)
-    if is_scanned_page(page):
-        report.add(
-            QAIssue(
-                page=page.number,
-                kind=IssueKind.SCAN_PAGE,
-                detail="pagina senza testo (probabile scansione): serve un OCR preliminare",
-            )
-        )
-    for block_id, system in text_blocks_outside(page):
-        report.add(
-            QAIssue(
-                page=page.number,
-                kind=IssueKind.UNSUPPORTED_SCRIPT,
-                block=block_id,
-                detail=f"scrittura '{system}': il shaping/RTL non è ancora supportato dal renderer",
-            )
-        )
+    for issue in _page_notes(page, settings):
+        report.add(issue)
     counters["blocks"] += rendered.blocks
     counters["perfect"] += rendered.perfect
     counters["overflow_shifted"] += rendered.shifted
+    counters["shaped"] = counters.get("shaped", 0) + rendered.shaped
 
     check_after_render(
         report, page, before, rendered, canvas, dpi=settings.visual_qa_dpi
@@ -68,3 +54,27 @@ def render_and_check(
         page.number, [strip_markup(value) for value in translations.values()], canvas.text()
     ):
         report.add(issue)
+
+
+def _page_notes(page: PageLayout, settings: AppSettings) -> list[QAIssue]:
+    """Scansioni e scritture non gestite: note sulla pagina, non sul disegno."""
+    notes: list[QAIssue] = []
+    if is_scanned_page(page):
+        notes.append(
+            QAIssue(
+                page=page.number,
+                kind=IssueKind.SCAN_PAGE,
+                detail="pagina senza testo (probabile scansione): serve un OCR preliminare",
+            )
+        )
+    if not settings.shaping:
+        for block_id, system in text_blocks_outside(page):
+            notes.append(
+                QAIssue(
+                    page=page.number,
+                    kind=IssueKind.UNSUPPORTED_SCRIPT,
+                    block=block_id,
+                    detail=f"scrittura '{system}': shaping disattivato (PDFBOOK_SHAPING=0)",
+                )
+            )
+    return notes

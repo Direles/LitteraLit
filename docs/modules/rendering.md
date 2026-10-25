@@ -63,6 +63,27 @@ and Planning*, pagine 16–17 (indice + corpo):
 | Em-dash nel PDF | 1 su 1 (conservata) |
 | Font | 0 riuso embedded, 3 fallback di sistema, **0 base-14** |
 
+## Shaping RTL/CJK (Fase 4.5)
+
+`TextWriter` posiziona i glifi uno dopo l'altro: per arabo, ebraico, devanagari, cinese,
+giapponese e coreano serve il **shaping** (forme contestuali, legature, direzione). PyMuPDF lo
+offre solo attraverso il motore HTML/CSS, quindi i blocchi in quelle scritture passano da
+`rendering/shaped.py` → `canvas.insert_markup` → `page.insert_htmlbox`:
+
+```css
+* { font-family: 'Noto Naskh Arabic', 'Amiri', 'Segoe UI', serif;
+    direction: rtl; text-align: right; font-size: 10pt; }
+```
+
+Dettagli:
+
+- la **direzione** viene dalla scrittura (`arabic`/`hebrew` → `rtl`), non dalla lingua di arrivo;
+- la catena di font parte dal bundle (Noto) e ripiega su nomi di sistema diffusi;
+- se il riquadro non basta, `insert_htmlbox` riduce fino al 60% del corpo (`scale_low=0.6`);
+- il fallimento non è silenzioso: si ricade sul painter di prosa (glifi mancanti segnalati dal
+  QA) e l'issue `shaped_text` documenta i blocchi resi via HTML;
+- `PDFBOOK_SHAPING=0` disattiva il passo e riabilita `unsupported_script` come segnalazione.
+
 ## Limiti noti (misurati)
 
 | Effetto | Evidenza | Conseguenza | Mitigazione |

@@ -205,6 +205,7 @@ class TranslationJob:
             missing_policy=self.spec.missing_policy,
             overflow_policy=self.spec.overflow_policy,
             inline_styles=self.spec.settings.inline_styles,
+            shaping=self.spec.settings.shaping,
         )
 
     def _translate_plan(

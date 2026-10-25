@@ -15,11 +15,13 @@ from pdfbook.domain.models import BlockKind, IssueKind, PageLayout, QAIssue, Rec
 from pdfbook.domain.ports import FontResolverPort, ShortenerPort
 from pdfbook.layout.hyphenation import Hyphenation
 from pdfbook.layout.segmentation import classify_block, is_structured_block
+from pdfbook.layout.writing_system import classify_text
 from pdfbook.qa.checks_geometry import check_page_geometry
 
 from .canvas import PageCanvas
 from .painter import RETRANSLATE_THRESHOLD, BlockPainter, BlockResult
 from .runs import shift_for
+from .shaped import paint_shaped
 from .structured_painter import StructuredPainter
 
 __all__ = ["SHIFT_TOLERANCE", "PageRenderResult", "VectorRenderer"]
@@ -40,6 +42,7 @@ class PageRenderResult:
     shifted: int = 0
     retranslated: int = 0
     not_drawn: int = 0
+    shaped: int = 0
     runs: list = field(default_factory=list)
 
     def merge(self, block: BlockResult) -> None:
@@ -62,6 +65,7 @@ class VectorRenderer:
         overflow_policy: str = "keep_size",
         retranslate_threshold: float = RETRANSLATE_THRESHOLD,
         inline_styles: bool = True,
+        shaping: bool = False,
     ) -> None:
         shared = dict(
             hyphenation=hyphenation,
@@ -73,6 +77,7 @@ class VectorRenderer:
         )
         self.prose = BlockPainter(resolver, **shared)
         self.structured = StructuredPainter(resolver, **shared)
+        self.shaping = shaping
 
     def render_page(
         self,
@@ -97,6 +102,9 @@ class VectorRenderer:
             shift = 0.0 if cell else shift_for(block.bbox, placed)
             if shift > SHIFT_TOLERANCE:
                 result.shifted += 1
+            if self.shaping and self._paint_as_markup(canvas, block, page, translations, shift, result):
+                placed.append((block.bbox, block.bbox.y1 + shift))
+                continue
             painter = self.structured if is_structured_block(block) else self.prose
             painted = painter.paint(block, page, translations, shift, cell=cell)
             result.blocks += 1
@@ -114,6 +122,38 @@ class VectorRenderer:
             )
         )
         return result
+
+    @staticmethod
+    def _paint_as_markup(
+        canvas: PageCanvas,
+        block,
+        page: PageLayout,
+        translations: Mapping[str, str],
+        shift: float,
+        result: PageRenderResult,
+    ) -> bool:
+        """Shaping RTL/CJK via HTML; ``False`` se il blocco è latino o non è disegnabile."""
+        text = translations.get(block.id)
+        if not text or not text.strip():
+            return False
+        system = classify_text(text)
+        if system.supported or not system.letters:
+            return False
+        shaped = paint_shaped(
+            block, page, text, system=system.name, canvas=canvas, shift=shift
+        )
+        if not shaped.painted:
+            return False
+        result.shaped += 1
+        result.issues.append(
+            QAIssue(
+                page=page.number,
+                kind=IssueKind.SHAPED_TEXT,
+                block=block.id,
+                detail=f"scrittura '{system.name}' resa con shaping HTML",
+            )
+        )
+        return True
 
     @staticmethod
     def _draw(canvas: PageCanvas, page: PageLayout, runs: list, result: PageRenderResult) -> None:

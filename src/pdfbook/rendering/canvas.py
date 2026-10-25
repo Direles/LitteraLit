@@ -52,6 +52,10 @@ class PageCanvas(Protocol):
         """Testo effettivamente presente nella pagina (per il controllo dei glifi)."""
         ...
 
+    def insert_markup(self, box: Rect, markup: str, css: str) -> bool:
+        """Inserisce un riquadro HTML/CSS (shaping RTL/CJK); ``False`` se non ci sta."""
+        ...
+
     def snapshot(self, dpi: float = 72.0) -> PageImage:
         """Immagine in scala di grigi della pagina, per il confronto visivo."""
         ...

@@ -69,6 +69,7 @@ class IssueKind(StrEnum):
     UNSUPPORTED_SCRIPT = "unsupported_script"
     ROUNDTRIP_LOSS = "roundtrip_loss"
     SPECIAL_CHAR_LEAK = "special_char_leak"
+    SHAPED_TEXT = "shaped_text"
 
 
 @dataclass(frozen=True)

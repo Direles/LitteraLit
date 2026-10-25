@@ -13,6 +13,7 @@ Unico punto in cui il rendering tocca ``fitz``:
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 
 import pymupdf as fitz
@@ -23,6 +24,8 @@ from pdfbook.qa.checks_visual import PageImage
 from .canvas import TextRun
 
 __all__ = ["FitzCanvas"]
+
+log = logging.getLogger(__name__)
 
 
 class FitzCanvas:
@@ -69,6 +72,17 @@ class FitzCanvas:
     def text(self) -> str:
         """Testo estratto dalla pagina dopo il disegno (usato dal QA sui glifi)."""
         return self.page.get_text()
+
+    def insert_markup(self, box: Rect, markup: str, css: str) -> bool:
+        """Riquadro HTML/CSS: è il modo per avere shaping RTL/CJK da PyMuPDF."""
+        try:
+            spare, _scale = self.page.insert_htmlbox(
+                fitz.Rect(box.normalized()), markup, css=css, scale_low=0.6
+            )
+        except Exception as exc:  # noqa: BLE001 - il chiamante decide il fallback
+            log.debug("insert_htmlbox fallito su %s: %s", box, exc)
+            return False
+        return spare >= 0
 
     def snapshot(self, dpi: float = 72.0) -> PageImage:
         """Pagina in scala di grigi, per il confronto visivo prima/dopo."""
