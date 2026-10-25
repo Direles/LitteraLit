@@ -56,6 +56,13 @@ def build_parser() -> argparse.ArgumentParser:
     cache.add_argument("--max-age", type=float, default=None, help="età massima in giorni")
     cache.add_argument("--max-entries", type=int, default=None, help="numero massimo di voci")
 
+    qa = sub.add_parser("qa", help="verifica il gate di pubblicazione su un report")
+    qa.add_argument("report")
+
+    report = sub.add_parser("report", help="converte il report QA in HTML leggibile")
+    report.add_argument("report")
+    report.add_argument("--html", default=None, help="percorso del file HTML di uscita")
+
     sub.add_parser("gui", help="avvia l'interfaccia desktop")
 
     return parser
@@ -69,6 +76,10 @@ def main(argv: list[str] | None = None) -> int:
         return _doctor(args)
     if args.command == "cache":
         return _cache(args)
+    if args.command == "qa":
+        return _qa(args)
+    if args.command == "report":
+        return _report(args)
     if args.command == "gui":
         return _gui()
     return 2
@@ -190,6 +201,25 @@ def _cache(args: argparse.Namespace) -> int:
     print(f"  dimensione: {stats['bytes'] / 1024:.1f} KB")
     if not args.prune:
         print("  usa --prune --max-age 90 per liberare spazio")
+    return 0
+
+
+def _qa(args: argparse.Namespace) -> int:
+    """Gate di pubblicazione su un report esistente: 0 se passa, 1 se bloccante."""
+    report = parse_report(args.report)
+    violations = gate(report)
+    print(f"Report: {len(report.issues)} issue | gate: {'PASS' if not violations else 'FAIL'}")
+    for violation in violations:
+        print(f"  - {violation}")
+    return 0 if not violations else 1
+
+
+def _report(args: argparse.Namespace) -> int:
+    """HTML del report QA, scritto accanto al report salvo ``--html``."""
+    from pdfbook.qa.html_report import write_html
+
+    target = write_html(args.report, args.html)
+    print(f"Report HTML: {target}")
     return 0
 
 

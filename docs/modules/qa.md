@@ -130,6 +130,17 @@ Compatibilità verificata sui report reali della Gen 2: `parse_report` accetta
 `block: "multiple"` (stringa) e `block: 4` (numero), ignora tipi sconosciuti e non
 fallisce su file corrotti o mancanti (restituisce un report vuoto e logga).
 
+### HTML per la revisione (Fase 6.2)
+
+```bash
+pdfbook report libro_qa_report.json          # → libro_qa_report_qa_report.html
+pdfbook qa libro_qa_report.json              # gate: exit 0 se passa, 1 se bloccante
+```
+
+`html_from_report` produce un file **statico** (CSS incorporato, nessun JS, nessuna CDN): si
+apre offline e si può allegare. Le issue bloccanti sono evidenziate in rosso, i dettagli sono
+sempre escapati (un `<script>` nel testo tradotto non diventa markup).
+
 ## Perché il gate è nel modulo
 
 Un report che nessuno legge non è QA. `gate()` rende il report **azionabile**:

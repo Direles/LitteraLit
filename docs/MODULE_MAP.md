@@ -125,6 +125,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/qa/checks_glyphs.py` | qa | Glyph-diff atteso/reso con normalizzazione NBSP | 110 | **esistente (P0.5)** | `tests/unit/test_checks_glyphs.py` |
 | `src/pdfbook/qa/checks_glossary.py` | qa | Verifica che i termini del glossario restino invariati | 80 | **esistente (Fase 5.1)** | `tests/unit/test_checks_glossary.py` |
 | `src/pdfbook/qa/checks_text.py` | qa | Qualità del testo: rapporto lunghezze, ripetizioni, lingua sbagliata | 170 | **esistente (Fase 5.4)** | `tests/unit/test_checks_text.py` |
+| `src/pdfbook/qa/html_report.py` | qa | Report QA in HTML statico (CSS incorporato, nessun JS) | 140 | **esistente (Fase 6.2)** | `tests/unit/test_html_report.py` |
 | `src/pdfbook/qa/checks_geometry.py` | qa | Sovrapposizioni e clipping dei run disegnati | 130 | **esistente (P0.5)** | `tests/unit/test_checks_geometry.py` |
 | `src/pdfbook/qa/textnorm.py` | qa | Normalizzazione del testo estratto (NBSP, soft hyphen, punteggiatura) | 90 | **esistente (P0.5)** | `tests/unit/test_textnorm.py` |
 | `src/pdfbook/gui/app.py` | gui | Finestra, thread worker, progress, log | 220 | **esistente (M11)** | smoke manuale |
