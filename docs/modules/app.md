@@ -97,6 +97,19 @@ Cosa garantisce e cosa **non** garantisce:
 
 `--resume` quindi non riapre un PDF a metà: dice "riusa pure la cache, il journal conferma che è lo stesso lavoro".
 
+## `app/costs.py` — quanto stai spendendo (Fase 3.3)
+
+```python
+account_costs(model=..., tokens_in=..., tokens_out=..., counters=..., max_cost=...)
+```
+
+Aggiorna `tokens_in`, `tokens_out` e `cost_usd_micro` nei contatori della run e, se
+`max_cost > 0`, solleva `UsageError` appena la stima supera il tetto. Il costo usa la tabella
+indicativa in `config/pricing.py`: **stima**, non fatturazione. Se il modello non è in
+tabella, il costo viene omesso e i token restano registrati.
+
+Dopo un blocco per budget il lavoro non è perso: journal e cache permettono `--resume`.
+
 ## `app/errors.py` — messaggi che dicono cosa fare (Fase 3.4)
 
 ```python

@@ -8,12 +8,14 @@ del modello (è responsabilità di ``translation/json_repair.py``, M1).
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
 
 import requests
 
 __all__ = [
     "DEFAULT_TIMEOUT",
+    "Completion",
     "CompletionPort",
     "ProviderError",
     "error_detail",
@@ -24,8 +26,19 @@ DEFAULT_TIMEOUT = 60.0
 _ERROR_SNIPPET = 300
 
 
+@dataclass(frozen=True)
+class Completion:
+    """Risposta del modello: testo e token dichiarati (0 se il provider non li espone)."""
+
+    text: str
+    tokens_in: int = 0
+    tokens_out: int = 0
+
+
 class ProviderError(RuntimeError):
     """Errore di trasporto o di forma della risposta del provider."""
+
+    retry_after: float | None = None
 
 
 @runtime_checkable
@@ -34,7 +47,7 @@ class CompletionPort(Protocol):
 
     name: str
 
-    def complete(self, system: str, user: str) -> str: ...
+    def complete(self, system: str, user: str) -> Completion: ...
 
 
 @runtime_checkable
@@ -84,7 +97,11 @@ def post_json(
         response = poster(url, headers=headers, json=dict(payload), timeout=timeout)
         response.raise_for_status()
     except requests.HTTPError as exc:
-        raise ProviderError(f"HTTP {getattr(response, 'status_code', '?')}: {error_detail(response)}") from exc
+        error = ProviderError(
+            f"HTTP {getattr(response, 'status_code', '?')}: {error_detail(response)}"
+        )
+        error.retry_after = _retry_after(response)
+        raise error from exc
     except requests.RequestException as exc:
         raise ProviderError(f"errore di rete ({type(exc).__name__})") from exc
     try:
@@ -94,3 +111,14 @@ def post_json(
     if not isinstance(data, dict):
         raise ProviderError("la risposta JSON non è un oggetto")
     return data
+
+
+def _retry_after(response: Any) -> float | None:
+    """Secondi indicati da ``Retry-After``, se presenti e numerici."""
+    headers = getattr(response, "headers", None) or {}
+    try:
+        raw = headers.get("Retry-After") or headers.get("retry-after")
+        value = float(str(raw).strip()) if raw is not None else None
+    except (TypeError, ValueError):
+        return None
+    return value if value and value >= 0 else None

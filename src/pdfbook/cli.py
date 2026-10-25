@@ -40,6 +40,9 @@ def build_parser() -> argparse.ArgumentParser:
     translate.add_argument("--missing-policy", choices=("skip", "keep"), default="skip")
     translate.add_argument("--overflow-policy", choices=("keep_size", "shrink"), default="keep_size")
     translate.add_argument("--log-level", choices=LOG_LEVELS, default=None)
+    translate.add_argument("--workers", type=int, default=None, help="chunk tradotti in parallelo")
+    translate.add_argument("--rate-limit", type=float, default=None, help="richieste al secondo")
+    translate.add_argument("--max-cost", type=float, default=None, help="tetto di spesa in USD")
     translate.add_argument(
         "--resume", action="store_true", help="riprendi il lavoro interrotto (journal + cache)"
     )
@@ -79,6 +82,12 @@ def _settings_from_args(args: argparse.Namespace):
         overrides["cache_path"] = Path(args.cache).expanduser()
     if args.log_level:
         overrides["log_level"] = args.log_level
+    if args.workers:
+        overrides["workers"] = max(int(args.workers), 1)
+    if args.rate_limit is not None:
+        overrides["rate_limit"] = max(float(args.rate_limit), 0.0)
+    if args.max_cost is not None:
+        overrides["max_cost"] = max(float(args.max_cost), 0.0)
     return type(settings)(**{**settings.__dict__, **overrides}) if overrides else settings
 
 
@@ -115,6 +124,11 @@ def _translate(args: argparse.Namespace) -> int:
     print(f"Pagine: {result.pages} | blocchi: {result.blocks} | issue: {len(result.report.issues)}")
     if result.resumed_pages:
         print(f"Ripresa: {result.resumed_pages} pagine già tradotte riutilizzate dalla cache")
+    tokens = result.summary.get("tokens_in", 0) + result.summary.get("tokens_out", 0)
+    if tokens:
+        cost = result.summary.get("cost_usd_micro", 0) / 1_000_000
+        print(f"Token: {result.summary.get('tokens_in', 0)} in / {result.summary.get('tokens_out', 0)} out"
+              + (f" · costo stimato: {cost:.2f} USD" if cost else ""))
     violations = result.violations()
     for violation in violations:
         print(f"GATE: {violation}")

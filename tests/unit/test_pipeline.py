@@ -7,7 +7,7 @@ from pathlib import Path
 from pdfbook.domain.models import TranslationSettings
 from pdfbook.translation.cache import TranslationCache
 from pdfbook.translation.pipeline import TranslationPipeline
-from pdfbook.translation.providers.base import ProviderError
+from pdfbook.translation.providers.base import Completion, ProviderError
 
 
 class FakeProvider:
@@ -22,7 +22,9 @@ class FakeProvider:
         item = self.responses.pop(0)
         if isinstance(item, Exception):
             raise item
-        return item
+        if isinstance(item, Completion):
+            return item
+        return Completion(text=item, tokens_in=10, tokens_out=5)
 
 
 def json_response(mapping):
@@ -125,6 +127,51 @@ class RetryTest(PipelineTestCase):
     def test_empty_payload_is_retried(self):
         pipeline = self.make("{}", json_response({"a": "uno"}))
         self.assertEqual(dict(pipeline.translate({"a": "one"}).translations), {"a": "uno"})
+
+
+class UsageTest(PipelineTestCase):
+    def test_tokens_are_accumulated(self):
+        pipeline = self.make(json_response({"a": "uno"}))
+        outcome = pipeline.translate({"a": "one"})
+        self.assertGreater(outcome.tokens_in, 0)
+        self.assertGreater(outcome.tokens_out, 0)
+        self.assertEqual(pipeline.tokens_in, outcome.tokens_in)
+
+    def test_workers_translate_all_chunks(self):
+        pipeline = self.make(
+            json_response({"a": "uno"}),
+            json_response({"b": "due"}),
+            max_chars=20,
+            workers=2,
+        )
+        outcome = pipeline.translate({"a": "x" * 10, "b": "y" * 10})
+        self.assertTrue(outcome.complete)
+        self.assertEqual(len(pipeline.provider.calls), 2)
+
+    def test_retry_after_is_respected(self):
+        error = ProviderError("429")
+        error.retry_after = 7.0
+        pipeline = self.make(error, json_response({"a": "uno"}))
+        outcome = pipeline.translate({"a": "one"})
+        self.assertTrue(outcome.complete)
+        self.assertEqual(self.sleeps, [7.0])
+
+    def test_limiter_is_used_before_calling(self):
+        waits = []
+
+        class Limiter:
+            def wait(self):
+                waits.append(True)
+
+        pipeline = TranslationPipeline(
+            provider=FakeProvider(json_response({"a": "uno"})),
+            cache=self.cache,
+            settings=self.settings,
+            sleep=self.sleeps.append,
+            limiter=Limiter(),
+        )
+        pipeline.translate({"a": "one"})
+        self.assertEqual(waits, [True])
 
 
 class ShortenTest(PipelineTestCase):

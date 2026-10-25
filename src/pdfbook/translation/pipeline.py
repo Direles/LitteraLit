@@ -15,7 +15,9 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable, Iterable, Iterator, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from threading import Lock
 
 from pdfbook.domain.models import TranslationSettings
 from pdfbook.translation.cache import TranslationCache
@@ -27,6 +29,7 @@ from pdfbook.translation.prompts import (
     build_user_payload,
 )
 from pdfbook.translation.providers.base import CompletionPort, ProviderError
+from pdfbook.translation.ratelimit import RateLimiter
 
 __all__ = ["DEFAULT_MAX_CHARS", "TranslationOutcome", "TranslationPipeline"]
 
@@ -40,12 +43,14 @@ _SHORT_PREFIX = "[short]"
 
 @dataclass(frozen=True)
 class TranslationOutcome:
-    """Risultato di un batch: traduzioni, chiavi mancanti, riuso della cache."""
+    """Risultato di un batch: traduzioni, chiavi mancanti, riuso della cache, token."""
 
     translations: Mapping[str, str]
     missing: tuple[str, ...] = ()
     cached: int = 0
     requested: int = 0
+    tokens_in: int = 0
+    tokens_out: int = 0
 
     @property
     def complete(self) -> bool:
@@ -68,6 +73,8 @@ class TranslationPipeline:
         attempts: int = DEFAULT_ATTEMPTS,
         backoff: float = DEFAULT_BACKOFF,
         sleep: Callable[[float], None] = time.sleep,
+        limiter: RateLimiter | None = None,
+        workers: int = 1,
     ) -> None:
         if attempts < 1:
             raise ValueError("attempts deve essere >= 1")
@@ -80,6 +87,11 @@ class TranslationPipeline:
         self.attempts = attempts
         self.backoff = backoff
         self.sleep = sleep
+        self.limiter = limiter
+        self.workers = max(int(workers), 1)
+        self._usage_lock = Lock()
+        self.tokens_in = 0
+        self.tokens_out = 0
 
     # ---------- API ----------
 
@@ -93,16 +105,30 @@ class TranslationPipeline:
         translations: dict[str, str] = dict(blanks)
         hits, pending = self._from_cache(cleaned)
         translations.update(hits)
-        for chunk in self._chunks(pending):
-            for key, value in self._translate_chunk(chunk, context).items():
-                translations[key] = value
+        chunks = list(self._chunks(pending))
+        before_in, before_out = self.tokens_in, self.tokens_out
+        for chunk_result in self._run_chunks(chunks, context):
+            translations.update(chunk_result)
         missing = tuple(key for key in pending if key not in translations)
         return TranslationOutcome(
             translations=translations,
             missing=missing,
             cached=len(hits),
             requested=len(pending),
+            tokens_in=self.tokens_in - before_in,
+            tokens_out=self.tokens_out - before_out,
         )
+
+    def _run_chunks(
+        self, chunks: list[dict[str, str]], context: str | None
+    ) -> list[dict[str, str]]:
+        """Traduce i chunk in sequenza, o in parallelo se ``workers`` > 1."""
+        if not chunks:
+            return []
+        if self.workers == 1 or len(chunks) == 1:
+            return [self._translate_chunk(chunk, context) for chunk in chunks]
+        with ThreadPoolExecutor(max_workers=min(self.workers, len(chunks))) as pool:
+            return list(pool.map(lambda chunk: self._translate_chunk(chunk, context), chunks))
 
     def shorten(self, original: str, current: str, max_chars: int) -> str:
         """Versione più corta della traduzione, o ``current`` se non è possibile."""
@@ -184,10 +210,13 @@ class TranslationPipeline:
         last_error: Exception | None = None
         for attempt in range(1, self.attempts + 1):
             try:
-                raw = self.provider.complete(system, user)
-                parsed = parse_json_object(raw, expected_keys=expected)
+                if self.limiter is not None:
+                    self.limiter.wait()
+                completion = self.provider.complete(system, user)
+                self._account(completion)
+                parsed = parse_json_object(completion.text, expected_keys=expected)
                 if not parsed:
-                    raise JsonRepairError("risposta senza chiavi utili", raw)
+                    raise JsonRepairError("risposta senza chiavi utili", completion.text)
                 return parsed
             except (ProviderError, JsonRepairError) as exc:
                 last_error = exc
@@ -196,8 +225,20 @@ class TranslationPipeline:
                     attempt, self.attempts, self.provider.name, exc,
                 )
                 if attempt < self.attempts:
-                    self.sleep(self.backoff ** attempt)
+                    self.sleep(self._delay(attempt, exc))
         raise ProviderError(
             f"{self.provider.name}: traduzione fallita dopo {self.attempts} tentativi "
             f"({type(last_error).__name__}: {last_error})"
         )
+
+    def _delay(self, attempt: int, error: Exception) -> float:
+        """Backoff esponenziale, rispettando ``Retry-After`` quando il provider lo indica."""
+        backoff = self.backoff ** attempt
+        retry_after = getattr(error, "retry_after", None)
+        return max(backoff, float(retry_after)) if retry_after else backoff
+
+    def _account(self, completion) -> None:
+        """Accumula i token dichiarati dal provider (thread-safe)."""
+        with self._usage_lock:
+            self.tokens_in += int(getattr(completion, "tokens_in", 0) or 0)
+            self.tokens_out += int(getattr(completion, "tokens_out", 0) or 0)

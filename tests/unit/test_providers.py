@@ -80,7 +80,7 @@ class OpenAICompatibleTest(unittest.TestCase):
     def test_extracts_content_and_builds_request(self):
         session = StubSession(StubResponse({"choices": [{"message": {"content": '{"a": "b"}'}}]}))
         provider = self.make(session)
-        self.assertEqual(provider.complete("sys", "usr"), '{"a": "b"}')
+        self.assertEqual(provider.complete("sys", "usr").text, '{"a": "b"}')
         call = session.calls[0]
         self.assertEqual(call["url"], "https://api.deepseek.com/chat/completions")
         self.assertEqual(call["headers"]["Authorization"], "Bearer k")
@@ -109,7 +109,7 @@ class GeminiTest(unittest.TestCase):
     def test_uses_header_and_not_query_string(self):
         session = StubSession(StubResponse({"candidates": [{"content": {"parts": [{"text": "ok"}]}}]}))
         provider = GeminiProvider(model="gemini-x", api_key="secret", session=session)
-        self.assertEqual(provider.complete("s", "u"), "ok")
+        self.assertEqual(provider.complete("s", "u").text, "ok")
         call = session.calls[0]
         self.assertNotIn("key=", call["url"])
         self.assertEqual(call["headers"]["x-goog-api-key"], "secret")
@@ -135,7 +135,7 @@ class AnthropicTest(unittest.TestCase):
         data = {"content": [{"type": "thinking", "thinking": "..."}, {"type": "text", "text": "ok"}]}
         session = StubSession(StubResponse(data))
         provider = AnthropicProvider(model="claude", api_key="k", session=session)
-        self.assertEqual(provider.complete("s", "u"), "ok")
+        self.assertEqual(provider.complete("s", "u").text, "ok")
         headers = session.calls[0]["headers"]
         self.assertEqual(headers["anthropic-version"], "2023-06-01")
         self.assertEqual(headers["x-api-key"], "k")

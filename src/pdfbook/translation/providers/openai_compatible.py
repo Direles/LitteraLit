@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import DEFAULT_TIMEOUT, ProviderError, post_json
+from .base import DEFAULT_TIMEOUT, Completion, ProviderError, post_json
 
 __all__ = ["OpenAIChatProvider"]
 
@@ -39,7 +39,7 @@ class OpenAIChatProvider:
         self.session = session
         self.timeout = timeout
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str) -> Completion:
         payload = {
             "model": self.model,
             "messages": [
@@ -49,7 +49,12 @@ class OpenAIChatProvider:
             "response_format": {"type": "json_object"},
         }
         data = post_json(self.session, self.endpoint, self._headers(), payload, self.timeout)
-        return _message_content(self.name, data)
+        usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
+        return Completion(
+            text=_message_content(self.name, data),
+            tokens_in=_token(usage, "prompt_tokens"),
+            tokens_out=_token(usage, "completion_tokens"),
+        )
 
     def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -67,3 +72,11 @@ def _message_content(name: str, data: dict[str, Any]) -> str:
     if not isinstance(content, str) or not content.strip():
         raise ProviderError(f"{name}: 'message.content' assente o vuoto")
     return content
+
+
+def _token(usage: dict[str, Any], key: str) -> int:
+    """Token dichiarati in ``usage`` (0 se assenti o non numerici)."""
+    try:
+        return max(int(usage.get(key)), 0)
+    except (TypeError, ValueError):
+        return 0

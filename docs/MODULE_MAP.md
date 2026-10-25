@@ -70,10 +70,14 @@ legacy/              codice Gen 1 congelato
 |---|---|---|---|---|---|
 | `src/pdfbook/domain/models.py` | domain | Dataclass condivise: `Rect`, `Span`, `Line`, `TextBlock`, `PageLayout`, `TranslationSettings`, `QAIssue`, `QAReport` | 220 | **esistente** | `tests/unit/test_domain_models.py` |
 | `src/pdfbook/domain/ports.py` | domain | Protocol: `TranslatorPort`, `ShortenerPort`, `FontResolverPort`, `ProgressPort`, `DocumentSource` | 120 | **esistente** | — (solo tipi) |
-| `src/pdfbook/config/settings.py` | config | Impostazioni da env/`.env`, validazione, nessun segreto su disco | 160 | **esistente (M11)** | `tests/unit/test_settings.py` |
+| `src/pdfbook/config/settings.py` | config | Impostazioni da env/`.env`, validazione, nessun segreto su disco | 200 | **esistente (M11)** | `tests/unit/test_settings.py` |
+| `src/pdfbook/config/pricing.py` | config | Tabella prezzi indicativi e stima del costo di una run | 70 | **esistente (Fase 3.3)** | `tests/unit/test_pricing_ratelimit.py` |
 | `src/pdfbook/app/runtime.py` | app | Costruzione dipendenze reali (PDF, provider, cache, font, canvas) | 110 | **esistente (M11)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/pipeline.py` | app | Job di documento: pagine → batch → render → QA → salvataggio | 330 | **esistente (M11/Fase 3)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/page_translator.py` | app | Traduzione della pagina: unità, split delle continuazioni, glossario | 110 | **esistente (Fase 2/5)** | `tests/unit/test_app_pipeline.py` |
+| `src/pdfbook/app/page_render.py` | app | Rendering di pagina + QA visivo/glifi e contatori | 60 | **esistente (Fase 0/3)** | `tests/integration/test_pipeline_fixtures.py` |
+| `src/pdfbook/app/visual_qa.py` | app | Fotografia prima/dopo e confronto visivo di pagina | 60 | **esistente (Fase 0)** | `tests/unit/test_checks_visual.py` |
+| `src/pdfbook/app/costs.py` | app | Contabilità token/costo e tetto di spesa | 60 | **esistente (Fase 3.3)** | `tests/unit/test_app_pipeline.py` |
 | `src/pdfbook/app/checkpoints.py` | app | Fingerprint del lavoro, journal di avanzamento, salvataggio periodico della cache | 110 | **esistente (Fase 3.1)** | `tests/unit/test_journal.py` |
 | `src/pdfbook/app/journal.py` | app | Modello e I/O atomico del journal | 110 | **esistente (Fase 3.1)** | `tests/unit/test_journal.py` |
 | `src/pdfbook/app/errors.py` | app | Classificazione errori, codici di uscita e messaggi azionabili | 90 | **esistente (Fase 3.4)** | `tests/unit/test_errors.py` |
@@ -95,6 +99,7 @@ legacy/              codice Gen 1 congelato
 | `src/pdfbook/fonts/fitz_adapter.py` | fonts | Unico punto con `fitz`: `PdfFontSource`, `make_fitz_font` | 60 | **esistente (M5)** | smoke test |
 | `src/pdfbook/translation/json_repair.py` | translation | Parsing JSON tollerante e riparazione | 190 | **esistente (M1)** | `tests/unit/test_json_repair.py` |
 | `src/pdfbook/translation/cache.py` | translation | TM con chiave composta + scrittura atomica | 190 | **esistente (M3)** | `tests/unit/test_cache.py` |
+| `src/pdfbook/translation/ratelimit.py` | translation | Intervallo minimo fra chiamate, thread-safe | 60 | **esistente (Fase 3.2)** | `tests/unit/test_pricing_ratelimit.py` |
 | `src/pdfbook/translation/prompts.py` | translation | Prompt di traduzione e compressione (glossario, contesto troncato) | 140 | **esistente (M4)** | `tests/unit/test_prompts.py` |
 | `src/pdfbook/translation/pipeline.py` | translation | Cache → chunking → provider → riparazione, con retry/backoff | 230 | **esistente (M4)** | `tests/unit/test_pipeline.py` |
 | `src/pdfbook/translation/providers/base.py` | translation | Trasporto HTTP, `ProviderError`, `CompletionPort` | 100 | **esistente (M2)** | `tests/unit/test_providers.py` |

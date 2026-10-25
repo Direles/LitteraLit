@@ -12,7 +12,7 @@ from pathlib import Path
 from pdfbook.app.runtime import Runtime
 from pdfbook.domain.models import Line, PageLayout, Rect, Span, TextBlock
 from pdfbook.translation.cache import TranslationCache
-from pdfbook.translation.providers.base import ProviderError
+from pdfbook.translation.providers.base import Completion, ProviderError
 
 
 class FakeCanvas:
@@ -137,9 +137,10 @@ class EchoProvider:
         batch = json.loads(user)
         if self.keep is not None:
             batch = dict(list(batch.items())[: self.keep])
-        return json.dumps(
+        payload = json.dumps(
             {key: self.prefix + value for key, value in batch.items()}, ensure_ascii=False
         )
+        return Completion(text=payload, tokens_in=len(user) // 4, tokens_out=len(payload) // 4)
 
 
 class FailingProvider:
@@ -164,7 +165,8 @@ class FixedProvider:
 
     def complete(self, system, user):
         self.calls += 1
-        return json.dumps({key: self.text for key in json.loads(user)}, ensure_ascii=False)
+        payload = json.dumps({key: self.text for key in json.loads(user)}, ensure_ascii=False)
+        return Completion(text=payload, tokens_in=len(user) // 4, tokens_out=len(payload) // 4)
 
 
 class FailOnSecondCall(EchoProvider):

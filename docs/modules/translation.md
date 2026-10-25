@@ -2,7 +2,7 @@
 
 **File**: `translation/json_repair.py`, `cache.py`, `prompts.py`, `pipeline.py`, `providers/{base,openai_compatible,gemini,anthropic,registry}.py`
 **Layer**: `translation` — può importare `domain` e `config`, più i propri sottomoduli (R5).
-**Test**: `tests/unit/test_json_repair.py`, `test_cache.py`, `test_prompts.py`, `test_providers.py`, `test_pipeline.py`
+**Test**: `tests/unit/test_json_repair.py`, `test_cache.py`, `test_prompts.py`, `test_providers.py`, `test_pipeline.py`, `test_pricing_ratelimit.py`
 **Migrazioni**: M1 (parsing), M2 (provider), M3 (cache), M4 (pipeline) — **completate**.
 
 ## Responsabilità
@@ -88,6 +88,25 @@ potenzialmente avvelenate.
 | Robustezza | file corrotto o con valori non stringa → warning + ripartenza pulita |
 | Nessuna perdita silenziosa | `save()` restituisce `False` e logga l'errore di I/O |
 | Nessun segreto nei log | si loggano solo percorsi e messaggi d'errore |
+
+## `ratelimit.py` e `Completion` (Fase 3.2/3.3)
+
+```python
+RateLimiter.from_rate(requests_per_second)     # 0 = nessun limite
+limiter.wait()                                  # intervallo minimo, thread-safe
+
+Completion(text, tokens_in, tokens_out)         # risposta del provider
+```
+
+- **Token**: ogni adapter estrae `usage` (OpenAI/DeepSeek), `usageMetadata` (Gemini),
+  `usage` (Anthropic). Se il provider non li dichiara restano 0: il costo viene omesso,
+  non inventato.
+- **`Retry-After`**: `post_json` legge l'header e lo espone su `ProviderError.retry_after`;
+  la pipeline aspetta `max(backoff^n, retry_after)` invece di martellare il provider.
+- **Parallelismo**: `workers > 1` traduce i *chunk* della stessa pagina in parallelo
+  (`ThreadPoolExecutor`). Non parallelizza le pagine: lo stitching crea una dipendenza fra
+  pagina N e N+1, e romperla sarebbe peggio che andare lenti.
+- **Rate limiter** condiviso fra i thread: meglio rallentare che collezionare 429.
 
 ## Esempio d'uso
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import DEFAULT_TIMEOUT, ProviderError, post_json
+from .base import DEFAULT_TIMEOUT, Completion, ProviderError, post_json
 
 __all__ = ["AnthropicProvider"]
 
@@ -41,7 +41,7 @@ class AnthropicProvider:
         self.timeout = timeout
         self.max_tokens = max_tokens
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str) -> Completion:
         payload = {
             "model": self.model,
             "max_tokens": self.max_tokens,
@@ -49,7 +49,12 @@ class AnthropicProvider:
             "messages": [{"role": "user", "content": user}],
         }
         data = post_json(self.session, _ENDPOINT, self._headers(), payload, self.timeout)
-        return _text_block(data)
+        usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
+        return Completion(
+            text=_text_block(data),
+            tokens_in=_token(usage, "input_tokens"),
+            tokens_out=_token(usage, "output_tokens"),
+        )
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -69,3 +74,10 @@ def _text_block(data: dict[str, Any]) -> str:
             if isinstance(text, str) and text.strip():
                 return text
     raise ProviderError("anthropic: nessun blocco di tipo 'text' nella risposta")
+
+
+def _token(usage: dict[str, Any], key: str) -> int:
+    try:
+        return max(int(usage.get(key)), 0)
+    except (TypeError, ValueError):
+        return 0

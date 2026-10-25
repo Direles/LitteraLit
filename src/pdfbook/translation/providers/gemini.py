@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import DEFAULT_TIMEOUT, ProviderError, post_json
+from .base import DEFAULT_TIMEOUT, Completion, ProviderError, post_json
 
 __all__ = ["GeminiProvider"]
 
@@ -17,6 +17,7 @@ _ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:gen
 
 class GeminiProvider:
     name = "gemini"
+
     def __init__(
         self,
         *,
@@ -38,7 +39,7 @@ class GeminiProvider:
         self.timeout = timeout
         self.endpoint = endpoint.format(model=model)
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str) -> Completion:
         payload = {
             "contents": [
                 {"role": "user", "parts": [{"text": f"{system}\n\n{user}"}]},
@@ -46,7 +47,12 @@ class GeminiProvider:
             "generationConfig": {"responseMimeType": "application/json"},
         }
         data = post_json(self.session, self.endpoint, self._headers(), payload, self.timeout)
-        return _candidate_text(data)
+        metadata = data.get("usageMetadata") if isinstance(data.get("usageMetadata"), dict) else {}
+        return Completion(
+            text=_candidate_text(data),
+            tokens_in=_token(metadata, "promptTokenCount"),
+            tokens_out=_token(metadata, "candidatesTokenCount"),
+        )
 
     def _headers(self) -> dict[str, str]:
         return {"Content-Type": "application/json", "x-goog-api-key": self.api_key}
@@ -70,3 +76,10 @@ def _candidate_text(data: dict[str, Any]) -> str:
         if isinstance(text, str) and text.strip():
             return text
     raise ProviderError("gemini: nessuna parte testuale nella risposta")
+
+
+def _token(metadata: dict[str, Any], key: str) -> int:
+    try:
+        return max(int(metadata.get(key)), 0)
+    except (TypeError, ValueError):
+        return 0

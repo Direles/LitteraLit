@@ -238,6 +238,27 @@ class CheckpointTest(JobTestCase):
             ).run()
 
 
+class CostTest(JobTestCase):
+    def test_tokens_and_cost_end_up_in_the_summary(self):
+        result = self.run_job(FakeSource([simple_page("ciao mondo")]), EchoProvider())
+        self.assertGreater(result.summary.get("tokens_in", 0), 0)
+        self.assertGreater(result.summary.get("tokens_out", 0), 0)
+        self.assertGreater(result.summary.get("cost_usd_micro", 0), 0)
+
+    def test_budget_is_enforced(self):
+        from pdfbook.app.errors import UsageError
+
+        settings = AppSettings(
+            provider="DeepSeek", model="deepseek-chat", api_key="k",
+            cache_path=self.root / "cache-budget.json", max_cost=0.000001,
+        )
+        runtime = make_runtime(FakeSource([simple_page("ciao")]), EchoProvider(),
+                               settings.cache_path, save_calls=[])
+        spec = JobSpec(self.root / "in.pdf", self.root / "out.pdf", settings)
+        with self.assertRaises(UsageError):
+            TranslationJob(spec, runtime, sleep=lambda _: None).run()
+
+
 class PlanTest(unittest.TestCase):
     def test_continuation_merges_requests(self):
         first = make_page(

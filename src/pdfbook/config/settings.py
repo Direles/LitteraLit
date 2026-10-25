@@ -58,6 +58,9 @@ class AppSettings:
     visual_qa_dpi: float = 72.0
     stitch_paragraphs: bool = True
     checkpoint_every: int = 10
+    workers: int = 1
+    rate_limit: float = 0.0
+    max_cost: float = 0.0
 
     def __post_init__(self) -> None:
         if self.target_lang not in LANGUAGES:
@@ -98,6 +101,9 @@ class AppSettings:
             "visual_qa_dpi": self.visual_qa_dpi,
             "stitch_paragraphs": self.stitch_paragraphs,
             "checkpoint_every": self.checkpoint_every,
+            "workers": self.workers,
+            "rate_limit": self.rate_limit,
+            "max_cost": self.max_cost,
             "has_api_key": bool(self.api_key),
         }
 
@@ -150,6 +156,9 @@ def load_settings(
         visual_qa_dpi=_as_float(source.get("PDFBOOK_VISUAL_QA_DPI", "72"), 72.0),
         stitch_paragraphs=_as_bool(source.get("PDFBOOK_STITCH", "1")),
         checkpoint_every=int(_as_float(source.get("PDFBOOK_CHECKPOINT_EVERY", "10"), 10.0)),
+        workers=int(_as_float(source.get("PDFBOOK_WORKERS", "1"), 1.0)),
+        rate_limit=_as_float(source.get("PDFBOOK_RATE_LIMIT", "0"), 0.0),
+        max_cost=_as_float(source.get("PDFBOOK_MAX_COST", "0"), 0.0),
     )
 
 
